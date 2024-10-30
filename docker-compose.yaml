@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  boilerplate:
+    build:
+      context: .
+      dockerfile: dockerfile
+    restart: always
+    ports:
+      - ${PORT}:${PORT}
+    env_file:
+      - .env
+    environment:
+      - BOILERPLATE_ENV=${BOILERPLATE_ENV}
+      - PORT=${PORT}
+      - CLIENT_ID=${CLIENT_ID}
+      - CLIENT_SECRET=${CLIENT_SECRET}
+      - REALM=${REALM}
+      - KEYCLOAK_HOST=${KEYCLOAK_HOST}

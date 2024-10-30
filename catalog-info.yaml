@@ -1,0 +1,19 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: rb-cdn
+  description: This is a service for upload any media file to MINIO
+  annotations:
+      backstage.io/techdocs-ref: dir:.
+      github.com/project-slug: RodolfoBonis/rb-cdn
+      github.com/owner: RodolfoBonis
+      github.com/repo: rb-cdn
+  tags:
+    - go
+    - backstage-created
+    - backstage:techdocs
+    - rb-cdn
+spec:
+    type: service
+    owner: default/rbtech
+    lifecycle: production

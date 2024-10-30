@@ -1,0 +1,184 @@
+definitions:
+  entities.LoginResponseEntity:
+    description: LoginResponseEntity model data
+    properties:
+      accessToken:
+        description: Token to access this API
+        type: string
+      expiresIn:
+        description: Time to expires token in int
+        type: integer
+      refreshToken:
+        description: Token to refresh Access Token
+        type: string
+    type: object
+  entities.RequestLoginEntity:
+    description: RequestLoginEntity model data
+    properties:
+      email:
+        description: User email
+        type: string
+      password:
+        description: User password
+        type: string
+    type: object
+  utils.HttpError:
+    properties:
+      code:
+        type: integer
+      error:
+        type: string
+      message:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /auth:
+    post:
+      consumes:
+      - application/json
+      description: performs auth of user
+      parameters:
+      - description: Login Data
+        in: body
+        name: _
+        required: true
+        schema:
+          $ref: '#/definitions/entities.RequestLoginEntity'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.LoginResponseEntity'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HttpError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.HttpError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/utils.HttpError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/utils.HttpError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HttpError'
+      summary: Validate auth
+      tags:
+      - Auth
+  /health_check:
+    get:
+      consumes:
+      - application/json
+      description: Check if This service is healthy
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HttpError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.HttpError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/utils.HttpError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/utils.HttpError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HttpError'
+      summary: Health Check
+      tags:
+      - HealthCheck
+  /logout:
+    post:
+      consumes:
+      - application/json
+      description: Logout the User
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: boolean
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HttpError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.HttpError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/utils.HttpError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/utils.HttpError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HttpError'
+      summary: Logout
+      tags:
+      - Auth
+  /refresh:
+    post:
+      consumes:
+      - application/json
+      description: Refresh User Token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.LoginResponseEntity'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HttpError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.HttpError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/utils.HttpError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/utils.HttpError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HttpError'
+      summary: Refresh Login Access Token
+      tags:
+      - Auth
+swagger: "2.0"
