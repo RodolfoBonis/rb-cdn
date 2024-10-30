@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"github.com/RodolfoBonis/rb-cdn/core/config"
 	"github.com/RodolfoBonis/rb-cdn/core/errors"
 	"github.com/RodolfoBonis/rb-cdn/core/logger"
@@ -10,6 +9,7 @@ import (
 	"github.com/RodolfoBonis/rb-cdn/core/services"
 	"github.com/RodolfoBonis/rb-cdn/docs"
 	"github.com/RodolfoBonis/rb-cdn/routes"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -73,8 +73,8 @@ func init() {
 	// Use this for open connection with RabbitMQ
 	// services.StartAmqpConnection()
 
-	docs.SwaggerInfo.Title = "Go API Boilerplate"
-	docs.SwaggerInfo.Description = "A Boilerplate to create go services using gin gonic"
+	docs.SwaggerInfo.Title = "Rb CDN"
+	docs.SwaggerInfo.Description = "This is a service for upload any media file to MINIO"
 	docs.SwaggerInfo.Version = "0.0.1"
 	docs.SwaggerInfo.Host = fmt.Sprintf("localhost:%s", config.EnvPort())
 	docs.SwaggerInfo.BasePath = "/v1"

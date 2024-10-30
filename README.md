@@ -1,1 +1,1 @@
-# GO API BOILERPLATE
+# Rb CDN
