@@ -39,7 +39,7 @@ func main() {
 	app.Use(gin.Recovery())
 	app.Use(gin.ErrorLogger())
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"https://rodolfodebonis.com.br", "https://*.rodolfodebonis.com.br"},
+		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{"GET", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization", "Range"},
 		ExposeHeaders:    []string{"Content-Range", "Content-Length"},
