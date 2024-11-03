@@ -85,9 +85,7 @@ func (service *MinioService) UploadObject(bucket string, file entities.FileEntit
 		return "", errors.ServiceError(err.Error())
 	}
 
-	uri := fmt.Sprintf("%s/%s/%s", "https://rb-cdn.rodolfodebonis.com.br/v1", bucket, file.Name)
-
-	return uri, nil
+	return fmt.Sprintf("%s/%s", bucket, file.Name), nil
 }
 
 func (service *MinioService) GetObject(bucket string, objectName string, options minio.GetObjectOptions) (*minio.Object, *errors.AppError) {

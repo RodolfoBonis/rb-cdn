@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/minio/minio-go"
 	"net/http"
+	"strings"
 )
 
 type UploadHandler struct {
@@ -58,11 +59,35 @@ func (uc *UploadHandler) Upload(c *gin.Context) {
 
 	apiKeyData := data.(keyGuardian.ApiKeyData)
 
-	uri, appErr := uc.minioService.UploadObject(apiKeyData.Bucket, fileEntity, minio.PutObjectOptions{ContentType: contentType})
+	filePath, appErr := uc.minioService.UploadObject(apiKeyData.Bucket, fileEntity, minio.PutObjectOptions{ContentType: contentType})
 	if appErr != nil {
 		c.String(http.StatusInternalServerError, fmt.Sprintf("Erro ao fazer upload: %s", appErr))
 		return
 	}
 
-	c.String(http.StatusOK, fmt.Sprintf("Arquivo '%s' enviado com sucesso! URL = %s", objectName, uri))
+	extension := strings.Split(objectName, ".")[1]
+
+	videoExtensions := map[string]bool{
+		"mp4": true,
+		"avi": true,
+		"mkv": true,
+		"mov": true,
+		"flv": true,
+		"wmv": true,
+	}
+
+	message := fmt.Sprintf("Arquivo '%s' enviado com sucesso!", objectName)
+	rootUri := "https://rb-cdn.rodolfodebonis.com.br/v1"
+	if videoExtensions[extension] {
+		c.JSON(http.StatusOK, gin.H{
+			"url":     fmt.Sprintf("%s/stream/%s", rootUri, objectName),
+			"message": message,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"url":     fmt.Sprintf("%s/cdn/%s", rootUri, filePath),
+		"message": message,
+	})
 }
