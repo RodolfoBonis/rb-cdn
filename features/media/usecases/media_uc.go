@@ -1,6 +1,7 @@
 package usecases
 
 import (
+	keyGuardian "github.com/RodolfoBonis/go_key_guardian"
 	"github.com/RodolfoBonis/rb-cdn/core/services"
 	"github.com/gin-gonic/gin"
 	"github.com/minio/minio-go"
@@ -23,6 +24,19 @@ func (uc *MediaHandler) Media(c *gin.Context) {
 
 	if objectName == "" || bucket == "" {
 		c.String(http.StatusBadRequest, "Invalid object path")
+		return
+	}
+
+	data, exists := c.Get("configs")
+	if !exists {
+		c.String(http.StatusInternalServerError, "Erro ao obter as configurações")
+		return
+	}
+
+	apiKeyData := data.(keyGuardian.ApiKeyData)
+
+	if apiKeyData.Bucket != bucket {
+		c.String(http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
