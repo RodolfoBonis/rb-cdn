@@ -40,8 +40,8 @@ func main() {
 	app.Use(gin.ErrorLogger())
 	app.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
-		AllowMethods:     []string{"GET", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization", "Range"},
+		AllowMethods:     []string{"GET", "OPTIONS", "POST"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization", "Range", "X-Api-Key"},
 		ExposeHeaders:    []string{"Content-Range", "Content-Length"},
 		AllowCredentials: true,
 	}))
