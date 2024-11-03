@@ -6,10 +6,12 @@ import (
 	"github.com/RodolfoBonis/rb-cdn/core/errors"
 	"github.com/RodolfoBonis/rb-cdn/core/logger"
 	"github.com/RodolfoBonis/rb-cdn/core/middlewares"
-	"github.com/RodolfoBonis/rb-cdn/core/services"
 	"github.com/RodolfoBonis/rb-cdn/docs"
 	"github.com/RodolfoBonis/rb-cdn/routes"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"net/http"
+	"time"
 )
 
 func main() {
@@ -36,13 +38,26 @@ func main() {
 	app.Use(gin.Logger())
 	app.Use(gin.Recovery())
 	app.Use(gin.ErrorLogger())
+	app.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:8000", "http://localhost:63342"}, //Adicione seus domínios
+		AllowMethods:     []string{"GET", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization", "Range"},
+		ExposeHeaders:    []string{"Content-Range", "Content-Length"},
+		AllowCredentials: true,
+	}))
 
 	routes.InitializeRoutes(app)
 
 	runPort := fmt.Sprintf(":%s", config.EnvPort())
 
-	err = app.Run(runPort)
+	server := &http.Server{
+		Addr:         runPort,
+		Handler:      app,
+		ReadTimeout:  10 * time.Minute, // Ajuste conforme necessário
+		WriteTimeout: 10 * time.Minute, // Ajuste conforme necessário
+	}
 
+	err = server.ListenAndServe()
 	if err != nil {
 		appError := errors.RootError(err.Error())
 		logger.Log.Error(appError.Message, appError.ToMap())
@@ -56,8 +71,6 @@ func init() {
 	config.LoadEnvVars()
 
 	logger.InitLogger()
-
-	services.InitializeOAuthServer()
 
 	// Use this for open connection with DataBase
 	//appError := services.OpenConnection()

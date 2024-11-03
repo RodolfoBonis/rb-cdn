@@ -22,15 +22,6 @@ func EnvPort() string {
 	return GetEnv("PORT", "8000")
 }
 
-func EnvKeyCloak() entities.KeyCloakDataEntity {
-	return entities.KeyCloakDataEntity{
-		ClientID:     GetEnv("CLIENT_ID", "test"),
-		ClientSecret: GetEnv("CLIENT_SECRET", "test"),
-		Realm:        GetEnv("REALM", "test"),
-		Host:         GetEnv("KEYCLOAK_HOST", "localhost"),
-	}
-}
-
 func EnvNewRelic() entities.NewRelicEnv {
 	return entities.NewRelicEnv{
 		AppName: EnvServiceName(),
@@ -40,6 +31,18 @@ func EnvNewRelic() entities.NewRelicEnv {
 
 func EnvServiceId() string {
 	return GetEnv("SERVICE_ID", "")
+}
+
+func EnvMinioHost() string {
+	return GetEnv("MINIO_SERVER", "")
+}
+
+func EnvMinioAccessId() string {
+	return GetEnv("MINIO_ACCESS_ID", "")
+}
+
+func EnvMinioSecretKey() string {
+	return GetEnv("MINIO_SECRET_KEY", "")
 }
 
 func EnvSentryDSN() string {

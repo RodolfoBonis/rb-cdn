@@ -3,9 +3,11 @@ package logger
 import (
 	"bytes"
 	"fmt"
+	"github.com/RodolfoBonis/rb-cdn/core/types"
 	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
+	"strings"
 )
 
 func HandleRequestBody(req *http.Request) string {
@@ -24,10 +26,16 @@ func HandleResponseBody(rw gin.ResponseWriter) *BodyLogWriter {
 }
 
 func FormatRequestAndResponse(rw gin.ResponseWriter, req *http.Request, responseBody string, requestId string, requestBody string) string {
-	if req.URL.String() == "/metrics" {
-		return ""
+
+	endpointsList := types.Array{"/metrics", "/v1/health_check", "/ready", "/version", "/v1/upload", "/v1/stream", "/v1/cdn"}
+
+	for _, endpoint := range endpointsList {
+		if strings.Contains(req.URL.String(), endpoint.(string)) {
+			return fmt.Sprintf("[Request ID: %s], Status: [%d], Method: [%s], Url: %s",
+				requestId, rw.Status(), req.Method, req.URL.String())
+		}
 	}
 
-	return fmt.Sprintf("[Request ID: %s], Status: [%d], Method: [%s], Url: %s Request Body: %s, Response Body: %s",
+	return fmt.Sprintf("[Request ID: %s], Status: [%d], Method: [%s], Url: %s Request Body: %s Response Body: %s",
 		requestId, rw.Status(), req.Method, req.URL.String(), requestBody, responseBody)
 }

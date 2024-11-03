@@ -1,12 +1,12 @@
 package middlewares
 
 import (
+	"github.com/RodolfoBonis/rb-cdn/core/logger"
 	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/newrelic/go-agent/v3/integrations/nrgin"
 	"github.com/newrelic/go-agent/v3/newrelic"
-	"github.com/RodolfoBonis/rb-cdn/core/logger"
 	"net/http"
 )
 
@@ -53,7 +53,7 @@ func (m *MonitoringMiddleware) LogMiddleware(ctx *gin.Context) {
 
 func isSuccessStatusCode(statusCode int) bool {
 	switch statusCode {
-	case http.StatusOK, http.StatusCreated, http.StatusAccepted, http.StatusNoContent:
+	case http.StatusOK, http.StatusCreated, http.StatusAccepted, http.StatusNoContent, http.StatusPartialContent:
 		return true
 	default:
 		return false

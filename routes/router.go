@@ -1,12 +1,15 @@
 package routes
 
 import (
+	"github.com/RodolfoBonis/rb-cdn/core/health"
+	mediaRoutes "github.com/RodolfoBonis/rb-cdn/features/media/routes"
+	streamRoutes "github.com/RodolfoBonis/rb-cdn/features/stream/routes"
+	uploadRoutes "github.com/RodolfoBonis/rb-cdn/features/upload/routes"
+
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"github.com/RodolfoBonis/rb-cdn/core/health"
-	"github.com/RodolfoBonis/rb-cdn/features/auth"
 )
 
 func InitializeRoutes(router *gin.Engine) {
@@ -17,5 +20,7 @@ func InitializeRoutes(router *gin.Engine) {
 	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	health.InjectRoute(root)
-	auth.InjectRoutes(root)
+	uploadRoutes.InjectRoutes(root)
+	streamRoutes.InjectRoutes(root)
+	mediaRoutes.InjectRoutes(root)
 }
