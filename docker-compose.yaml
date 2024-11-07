@@ -1,19 +1,30 @@
-version: '3'
-
 services:
-  boilerplate:
+  rb-cdn:
     build:
       context: .
       dockerfile: dockerfile
+      args:
+        - GITHUB_TOKEN=${GITHUB_TOKEN}
+        - VERSION=${VERSION}
+    container_name: ${SERVICE_NAME}
     restart: always
     ports:
       - ${PORT}:${PORT}
     env_file:
       - .env
     environment:
-      - BOILERPLATE_ENV=${BOILERPLATE_ENV}
+      - ENV=${ENV}
       - PORT=${PORT}
-      - CLIENT_ID=${CLIENT_ID}
-      - CLIENT_SECRET=${CLIENT_SECRET}
-      - REALM=${REALM}
-      - KEYCLOAK_HOST=${KEYCLOAK_HOST}
+      - SERVICE_NAME=${SERVICE_NAME}
+      - SERVICE_ID=${SERVICE_ID}
+      - NEW_RELIC_LICENSE_KEY=${NEW_RELIC_LICENSE_KEY}
+      - GIN_MODE=${GIN_MODE}
+      - MINIO_SERVER=${MINIO_SERVER}
+      - MINIO_ACCESS_ID=${MINIO_ACCESS_ID}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
+    networks:
+      - traefik
+
+networks:
+  traefik:
+    external: true

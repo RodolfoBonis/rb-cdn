@@ -4,6 +4,7 @@ import (
 	"fmt"
 	keyGuardian "github.com/RodolfoBonis/go_key_guardian"
 	"github.com/RodolfoBonis/rb-cdn/core/entities"
+	"github.com/RodolfoBonis/rb-cdn/core/logger"
 	"github.com/RodolfoBonis/rb-cdn/core/services"
 	"github.com/gin-gonic/gin"
 	"github.com/minio/minio-go"
@@ -59,6 +60,7 @@ func (uc *UploadHandler) Upload(c *gin.Context) {
 
 	apiKeyData := data.(keyGuardian.ApiKeyData)
 
+	logger.Log.Info(fmt.Sprintf("Sending %s to Bucket: %s", objectName, apiKeyData.Bucket))
 	filePath, appErr := uc.minioService.UploadObject(apiKeyData.Bucket, fileEntity, minio.PutObjectOptions{ContentType: contentType})
 	if appErr != nil {
 		c.String(http.StatusInternalServerError, fmt.Sprintf("Erro ao fazer upload: %s", appErr))
