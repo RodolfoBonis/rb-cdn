@@ -14,10 +14,11 @@ import (
 
 type UploadHandler struct {
 	minioService services.IMinioService
+	log          *logger.CustomLogger
 }
 
-func NewUploadHandler(minioService services.IMinioService) *UploadHandler {
-	return &UploadHandler{minioService: minioService}
+func NewUploadHandler(minioService services.IMinioService, log *logger.CustomLogger) *UploadHandler {
+	return &UploadHandler{minioService: minioService, log: log}
 }
 
 func (uc *UploadHandler) Upload(c *gin.Context) {
@@ -60,7 +61,7 @@ func (uc *UploadHandler) Upload(c *gin.Context) {
 
 	apiKeyData := data.(keyGuardian.ApiKeyData)
 
-	logger.Log.Info(fmt.Sprintf("Sending %s to Bucket: %s", objectName, apiKeyData.Bucket))
+	uc.log.Info(fmt.Sprintf("Sending %s to Bucket: %s", objectName, apiKeyData.Bucket))
 	filePath, appErr := uc.minioService.UploadObject(apiKeyData.Bucket, fileEntity, minio.PutObjectOptions{ContentType: contentType})
 	if appErr != nil {
 		c.String(http.StatusInternalServerError, fmt.Sprintf("Erro ao fazer upload: %s", appErr))
