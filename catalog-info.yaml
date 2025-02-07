@@ -1,5 +1,5 @@
 apiVersion: backstage.io/v1alpha1
-kind: Component
+kind: API
 metadata:
   name: rb-cdn
   description: This is a service for upload any media file to MINIO
@@ -17,3 +17,5 @@ spec:
     type: service
     owner: default/rbtech
     lifecycle: production
+    definition:
+      $text: https://rb-cdn.rodolfodebonis.com.br/v1/docs/doc.json
