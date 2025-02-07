@@ -18,4 +18,4 @@ spec:
     owner: default/rbtech
     lifecycle: production
     definition:
-      $text: http://rb-cdn.rodolfodebonis.com.br/v1/docs/index.html
+      $text: http://rb-cdn.rodolfodebonis.com.br/v1/docs/doc.json
