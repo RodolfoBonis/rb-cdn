@@ -54,7 +54,6 @@ ENV VERSION=${VERSION}
 
 WORKDIR /go/src/github.com/RodolfoBonis/rb-cdn/
 
-COPY --from=builder /go/src/github.com/RodolfoBonis/rb-cdn/version.txt /
 COPY --from=builder /go/src/github.com/RodolfoBonis/rb-cdn/rb-cdn /
 
 CMD ["/rb-cdn"]

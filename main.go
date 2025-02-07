@@ -90,17 +90,8 @@ func init() {
 
 	docs.SwaggerInfo.Title = "Rb CDN"
 	docs.SwaggerInfo.Description = "This is a service for upload any media file to MINIO"
-	version := readVersionFromFile("version.txt")
-	docs.SwaggerInfo.Version = version
+	docs.SwaggerInfo.Version = "0.2.2"
 	docs.SwaggerInfo.Host = fmt.Sprintf("localhost:%s", config.EnvPort())
 	docs.SwaggerInfo.BasePath = "/v1"
 	docs.SwaggerInfo.Schemes = []string{"http", "https"}
-}
-
-func readVersionFromFile(filePath string) string {
-	data, err := os.ReadFile(filePath)
-	if err != nil {
-		log.Fatalf("Failed to read version file: %v", err)
-	}
-	return string(data)
 }
