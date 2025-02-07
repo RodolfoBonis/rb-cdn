@@ -88,7 +88,7 @@ func init() {
 
 	docs.SwaggerInfo.Title = "Rb CDN"
 	docs.SwaggerInfo.Description = "This is a service for upload any media file to MINIO"
-	docs.SwaggerInfo.Version = "0.2.2"
+	docs.SwaggerInfo.Version = "0.2.4"
 	docs.SwaggerInfo.Host = fmt.Sprintf("localhost:%s", config.EnvPort())
 	docs.SwaggerInfo.BasePath = "/v1"
 	docs.SwaggerInfo.Schemes = []string{"http", "https"}
