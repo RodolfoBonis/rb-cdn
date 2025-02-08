@@ -186,7 +186,7 @@ jobs:
           release_name: Release ${{ env.VERSION }}
           body: |
             Changes in this Release:
-            ${{ env.messages }}
+            ${{ join(fromJSON(steps.get_messages.outputs.messages), '\n') }}
           draft: false
           prerelease: false
 
@@ -251,7 +251,7 @@ jobs:
             • Commit URL: https://github.com/${{ github.repository }}/commit/${{ github.sha }}
             
             📋 *Recent Changes:*
-            ${{ join(fromJSON(steps.get_messages.outputs.messages), '') }}
+            ${{ join(fromJSON(steps.get_messages.outputs.messages), '\n') }}
             
             ⚠️ [Check GitHub Actions Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
