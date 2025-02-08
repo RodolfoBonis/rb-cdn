@@ -203,12 +203,13 @@ jobs:
 
       - if: ${{ needs.build_and_deploy.result == 'success' }}
         name: Send Success Message via Telegram
-        uses: appleboy/telegram-action@master
+        uses: akeylimepie/telegram-action@main
         with:
           token: ${{ secrets.BOTTOKEN }}
-          to: ${{ secrets.CHAT_ID }}
-          format: 'markdown'
-          message: |
+          chat_id: ${{ secrets.CHAT_ID }}
+          message_thread_id: ${{ secrets.THREAD_ID }}
+          parse_mode: 'markdown'
+          text: |
             🚀 *Deployment Successful!*
             
             *New Release Details:*
@@ -226,12 +227,13 @@ jobs:
 
       - if: ${{ needs.build_and_deploy.result != 'success' }}
         name: Send Error Message via Telegram
-        uses: appleboy/telegram-action@master
+        uses: akeylimepie/telegram-action@main
         with:
           token: ${{ secrets.BOTTOKEN }}
-          to: ${{ secrets.CHAT_ID }}
-          format: 'markdown'
-          message: |
+          chat_id: ${{ secrets.CHAT_ID }}
+          message_thread_id: ${{ secrets.THREAD_ID }}
+          parse_mode: 'markdown'
+          text: |
             ❌ *Deployment Failed!*
             
             *Error Details:*
