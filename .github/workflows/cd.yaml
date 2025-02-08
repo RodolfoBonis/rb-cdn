@@ -10,26 +10,40 @@ on:
 jobs:
   get_commit_messages:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' }}
+    env:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
     steps:
+      - name: Install GitHub CLI
+        run: sudo apt-get install gh -y
+
       - name: Check out repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GH_TOKEN }}
           fetch-depth: 0
 
-      - name: Get last release tag
-        id: lasttag
-        run: echo "::set-output name=tag::$(git describe --tags --abbrev=0)"
-
-      - name: Get commit messages
-        id: log
+      - name: Get last merged PR and commits
+        id: pr_info
         run: |
-          messages=$(git log --pretty=format:'%s' --no-merges ${{ steps.lasttag.outputs.tag }}..HEAD \
-            --author '!actions-user' \
-            --grep '!Increment version' \
-            --no-merges)
-          echo "$messages" > commit_messages.txt
-        shell: bash
+          pr_info=$(gh pr list --state merged --limit 1 --json number,title,body,mergeCommit)
+          
+          pr_number=$(echo "$pr_info" | jq -r '.[0].number')
+          echo "pr_number=$pr_number" >> $GITHUB_OUTPUT
+          
+          echo "🔄 Pull Request #$pr_number" > commit_messages.txt
+          echo "$(echo "$pr_info" | jq -r '.[0].title')" >> commit_messages.txt
+          echo "" >> commit_messages.txt
+          
+          pr_body=$(echo "$pr_info" | jq -r '.[0].body')
+          if [ "$pr_body" != "null" ] && [ ! -z "$pr_body" ]; then
+            echo "📝 Description:" >> commit_messages.txt
+            echo "$pr_body" >> commit_messages.txt
+            echo "" >> commit_messages.txt
+          fi
+          
+          echo "📦 Commits:" >> commit_messages.txt
+          gh pr view $pr_number --json commits --jq '.commits[] | "• " + .messageHeadline + if .messageBody then "\n  " + (.messageBody | gsub("\n"; "\n  ")) else "" end' >> commit_messages.txt
 
       - name: Upload commit messages
         uses: actions/upload-artifact@v4
@@ -40,7 +54,9 @@ jobs:
   build_and_deploy:
     needs: get_commit_messages
     runs-on: ${{ matrix.os }}
-
+    outputs:
+      VERSION: ${{ env.VERSION }}
+      IMAGE_URL: ${{ env.IMAGE_URL }}
     strategy:
       matrix:
         os: [ubuntu-latest]
