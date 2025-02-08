@@ -151,35 +151,68 @@ jobs:
           draft: false
           prerelease: false
 
-      - if: ${{ job.status == 'success' }}
-        name: Send Message via Telegram
+  notify:
+    needs: build_and_deploy
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Download commit messages
+        uses: actions/download-artifact@v4
+        with:
+          name: commit-messages
+          path: .
+
+      - name: Read commit messages
+        id: get_messages
+        if: ${{ needs.build_and_deploy.result != 'success' }}
+        run: |
+          messages=$(cat commit_messages.txt)
+          echo "messages=$(echo "$messages" | jq -R -s -c 'split("\n")')" >> $GITHUB_OUTPUT
+
+      - if: ${{ needs.build_and_deploy.result == 'success' }}
+        name: Send Success Message via Telegram
         uses: appleboy/telegram-action@master
         with:
           token: ${{ secrets.BOTTOKEN }}
           to: ${{ secrets.CHAT_ID }}
+          format: 'markdown'
           message: |
-            ✅ ${{ github.actor }} created commit:
-            Repository: ${{ github.repository }}
-            See changes: https://github.com/${{ github.repository }}/commit/${{ github.sha }}
-            Build Status: ${{ job.status }}
+            🚀 *Deployment Successful!*
             
-            Changelog:
-            ${{ env.MESSAGES }}
+            *New Release Details:*
+            • Version: ${{ needs.build_and_deploy.outputs.VERSION }}
+            • Created by: ${{ github.actor }}
+            • Repository: ${{ github.repository }}
+            
+            📝 *Release Notes:* [Release ${{ needs.build_and_deploy.outputs.VERSION }}](https://github.com/${{ github.repository }}/releases/tag/v${{ needs.build_and_deploy.outputs.VERSION }})
+            
+            ✅ Deployment Status: Success
+            🔄 ArgoCD Sync: Completed
+            📦 Image: ${{ needs.build_and_deploy.outputs.IMAGE_URL }}
+            
+            🎉 Deployment completed successfully!
 
-            Good job!
-
-      - if: ${{ job.status != 'success' }}
-        name: Send Message via Telegram
+      - if: ${{ needs.build_and_deploy.result != 'success' }}
+        name: Send Error Message via Telegram
         uses: appleboy/telegram-action@master
         with:
           token: ${{ secrets.BOTTOKEN }}
           to: ${{ secrets.CHAT_ID }}
+          format: 'markdown'
           message: |
-            ⛔️ There was an error when build project
-            ${{ github.actor }} created commit:
-            Repository: ${{ github.repository }}
-            See changes: https://github.com/${{ github.repository }}/commit/${{ github.sha }}
-            Build Status: ${{ job.status }}
+            ❌ *Deployment Failed!*
             
-            Changelog:
-            ${{ env.MESSAGES }}
+            *Error Details:*
+            • Repository: ${{ github.repository }}
+            • Triggered by: ${{ github.actor }}
+            • Commit: ${{ github.sha }}
+            
+            🔍 *Debug Information:*
+            • Build Status: ${{ needs.build_and_deploy.result }}
+            • Commit URL: https://github.com/${{ github.repository }}/commit/${{ github.sha }}
+            
+            📋 *Recent Changes:*
+            ${{ join(fromJSON(steps.get_messages.outputs.messages), '\n') }}
+            
+            ⚠️ [Check GitHub Actions Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
