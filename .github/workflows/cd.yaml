@@ -168,13 +168,6 @@ jobs:
           name: commit-messages
           path: .
 
-      - name: Read commit messages
-        id: get_messages
-        if: ${{ needs.build_and_deploy.result != 'success' }}
-        run: |
-          messages=$(cat commit_messages.txt)
-          echo "messages=$(echo "$messages" | jq -R -s -c 'split("")')" >> $GITHUB_OUTPUT
-
       - name: Create Release
         id: create_release
         if: ${{ job.status == 'success' }}
@@ -186,7 +179,7 @@ jobs:
           release_name: Release ${{ env.VERSION }}
           body: |
             Changes in this Release:
-            ${{ join(fromJSON(steps.get_messages.outputs.messages), '\n') }}
+          body_path: commit_messages.txt
           draft: false
           prerelease: false
 

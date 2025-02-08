@@ -107,6 +107,9 @@ jobs:
       - name: Install Python dependencies
         run: pip install -r .config/scripts/requirements.txt
 
+      - name: Clear Go Module Cache
+        run: go clean -modcache
+
       - name: Verify Dependencies Vulnerabilities
         id: govulncheck
         uses: golang/govulncheck-action@v1
