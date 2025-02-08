@@ -1,7 +1,10 @@
 name: cd
 
 on:
-  push:
+  workflow_run:
+    workflows: ['ci']
+    types:
+      - completed
     branches:
       - main
     paths-ignore:
@@ -10,45 +13,64 @@ on:
 jobs:
   get_commit_messages:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     env:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
     steps:
-      - name: Install GitHub CLI
-        run: sudo apt-get install gh -y
+        - name: Install GitHub CLI
+          run: sudo apt-get install gh -y
 
-      - name: Check out repository
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GH_TOKEN }}
-          fetch-depth: 0
+        - name: Check out repository
+          uses: actions/checkout@v4
+          with:
+            token: ${{ secrets.GH_TOKEN }}
+            fetch-depth: 0
 
-      - name: Get last merged PR and commits
-        id: pr_info
-        run: |
-          pr_info=$(gh pr list --state merged --limit 1 --json number,title,body,mergeCommit)
-          
-          pr_number=$(echo "$pr_info" | jq -r '.[0].number')
-          echo "pr_number=$pr_number" >> $GITHUB_OUTPUT
-          
-          echo "🔄 Pull Request #$pr_number" > commit_messages.txt
-          echo "$(echo "$pr_info" | jq -r '.[0].title')" >> commit_messages.txt
-          echo "" >> commit_messages.txt
-          
-          pr_body=$(echo "$pr_info" | jq -r '.[0].body')
-          if [ "$pr_body" != "null" ] && [ ! -z "$pr_body" ]; then
-            echo "📝 Description:" >> commit_messages.txt
-            echo "$pr_body" >> commit_messages.txt
-            echo "" >> commit_messages.txt
-          fi
-          
-          echo "📦 Commits:" >> commit_messages.txt
-          gh pr view $pr_number --json commits --jq '.commits[] | "• " + .messageHeadline + if .messageBody then "\n  " + (.messageBody | gsub("\n"; "\n  ")) else "" end' >> commit_messages.txt
+        - name: Get commit information
+          id: commit_info
+          run: |
+            # Tenta pegar informações da última PR mesclada
+            pr_info=$(gh pr list --state merged --limit 1 --json number,title,body,mergeCommit)
+            
+            # Verifica se encontrou uma PR
+            if [ "$(echo "$pr_info" | jq '. | length')" -gt 0 ] && [ "$(echo "$pr_info" | jq -r '.[0].mergeCommit.oid')" = "$(git rev-parse HEAD)" ]; then
+              # É uma PR mesclada
+              pr_number=$(echo "$pr_info" | jq -r '.[0].number')
+              echo "🔄 Pull Request #$pr_number" > commit_messages.txt
+              echo "$(echo "$pr_info" | jq -r '.[0].title')" >> commit_messages.txt
+              echo "" >> commit_messages.txt
+            
+              pr_body=$(echo "$pr_info" | jq -r '.[0].body')
+              if [ "$pr_body" != "null" ] && [ ! -z "$pr_body" ]; then
+                echo "📝 Description:" >> commit_messages.txt
+                echo "$pr_body" >> commit_messages.txt
+                echo "" >> commit_messages.txt
+              fi
+            
+              echo "📦 Commits:" >> commit_messages.txt
+              gh pr view $pr_number --json commits --jq '.commits[] | "• " + .messageHeadline + if .messageBody then "\n  " + (.messageBody | gsub("\n"; "\n  ")) else "" end' >> commit_messages.txt
+            else
+              # É um push direto na main
+              echo "📦 Direct Push to Main" > commit_messages.txt
+              echo "" >> commit_messages.txt
+            
+              # Pega o último commit
+              last_commit=$(git log -1 --pretty=format:"%s%n%n%b")
+              echo "• $last_commit" >> commit_messages.txt
+            
+              # Se houver mais commits no push, adiciona eles também
+              additional_commits=$(git log HEAD~1..HEAD^ --pretty=format:"• %s%n  %b")
+              if [ ! -z "$additional_commits" ]; then
+                echo "$additional_commits" >> commit_messages.txt
+              fi
+            fi
 
-      - name: Upload commit messages
-        uses: actions/upload-artifact@v4
-        with:
-          name: commit-messages
-          path: commit_messages.txt
+        - name: Upload commit messages
+          uses: actions/upload-artifact@v4
+          with:
+            name: commit-messages
+            path: commit_messages.txt
+
 
   build_and_deploy:
     needs: get_commit_messages
