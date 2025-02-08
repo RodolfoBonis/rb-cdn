@@ -168,10 +168,12 @@ jobs:
           name: commit-messages
           path: .
 
-      - name: Read commit messages from file
+      - name: Read commit messages
+        id: get_messages
+        if: ${{ needs.build_and_deploy.result != 'success' }}
         run: |
-          export MESSAGES=$(cat commit_messages.txt)
-          echo "MESSAGES='$MESSAGES'" >> $GITHUB_ENV
+          messages=$(cat commit_messages.txt)
+          echo "messages=$(echo "$messages" | jq -R -s -c 'split("")')" >> $GITHUB_OUTPUT
 
       - name: Create Release
         id: create_release
@@ -184,7 +186,7 @@ jobs:
           release_name: Release ${{ env.VERSION }}
           body: |
             Changes in this Release:
-            ${{ env.MESSAGES }}
+            ${{ env.messages }}
           draft: false
           prerelease: false
 
@@ -204,7 +206,7 @@ jobs:
         if: ${{ needs.build_and_deploy.result != 'success' }}
         run: |
           messages=$(cat commit_messages.txt)
-          echo "messages=$(echo "$messages" | jq -R -s -c 'split("\n")')" >> $GITHUB_OUTPUT
+          echo "messages=$(echo "$messages" | jq -R -s -c 'split("")')" >> $GITHUB_OUTPUT
 
       - if: ${{ needs.build_and_deploy.result == 'success' }}
         name: Send Success Message via Telegram
@@ -249,7 +251,7 @@ jobs:
             • Commit URL: https://github.com/${{ github.repository }}/commit/${{ github.sha }}
             
             📋 *Recent Changes:*
-            ${{ join(fromJSON(steps.get_messages.outputs.messages), '\n') }}
+            ${{ join(fromJSON(steps.get_messages.outputs.messages), '') }}
             
             ⚠️ [Check GitHub Actions Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
