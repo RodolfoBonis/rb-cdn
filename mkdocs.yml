@@ -1,5 +1,5 @@
 site_name: rb-cdn
 nav:
-  - Home: ../README.md
+  - Home: ./README.md
 theme:
   name: material
