@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/RodolfoBonis/rb-cdn/core/config"
 	"github.com/RodolfoBonis/rb-cdn/core/entities"
+	"github.com/RodolfoBonis/rb-cdn/core/errors"
+	"github.com/RodolfoBonis/rb-cdn/core/logger"
 	"github.com/RodolfoBonis/rb-cdn/core/middlewares"
 	"github.com/RodolfoBonis/rb-cdn/docs"
 	"github.com/RodolfoBonis/rb-cdn/routes"
@@ -14,6 +16,7 @@ import (
 	"os"
 	"testing"
 	"time"
+	_ "unsafe"
 )
 
 type versionTest struct {
@@ -30,6 +33,17 @@ type serverTest struct {
 	setup     func()
 	wantErr   bool
 	shouldRun bool
+}
+
+// Mock logger implementation
+type mockCustomLogger struct {
+	logger.CustomLogger
+	errorCalled bool
+	infoCalled  bool
+	warnCalled  bool
+	debugCalled bool
+	lastMessage string
+	lastFields  map[string]interface{}
 }
 
 func setupTestServer(t *testing.T, port string) *gin.Engine {
@@ -190,4 +204,95 @@ func TestPortConfiguration(t *testing.T) {
 			assert.Equal(t, tt.expected, fmt.Sprintf(":%s", config.EnvPort()))
 		})
 	}
+}
+
+func TestMainErrorHandling(t *testing.T) {
+	// Store original logger
+	originalLog := logger.Log
+	defer func() {
+		logger.Log = originalLog
+	}()
+
+	// Create mock logger
+	ml := &mockCustomLogger{}
+	logger.Log = &logger.CustomLogger{} // Initialize with empty CustomLogger
+	logger.Log = &ml.CustomLogger
+
+	tests := []struct {
+		name        string
+		setupFunc   func() error
+		wantMessage string
+		wantPanic   bool
+	}{
+		{
+			name: "handle trusted proxies error",
+			setupFunc: func() error {
+				return fmt.Errorf("trusted proxies error")
+			},
+			wantMessage: "trusted proxies error",
+			wantPanic:   true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ml.reset()
+
+			defer func() {
+				r := recover()
+				if tt.wantPanic && r == nil {
+					t.Error("expected panic but got none")
+				}
+				if !tt.wantPanic && r != nil {
+					t.Errorf("unexpected panic: %v", r)
+				}
+			}()
+
+			err := tt.setupFunc()
+			if err != nil {
+				appError := errors.RootError(err.Error())
+				logger.Log.Error(appError.Message, appError.ToMap())
+				panic(err)
+			}
+
+			if tt.wantMessage != "" {
+				assert.True(t, ml.errorCalled)
+				assert.Contains(t, ml.lastMessage, tt.wantMessage)
+				assert.NotNil(t, ml.lastFields)
+			}
+		})
+	}
+}
+
+// Mock logger methods
+func (m *mockCustomLogger) Error(msg string, jsonData ...map[string]interface{}) {
+	m.errorCalled = true
+	m.lastMessage = msg
+	if len(jsonData) > 0 {
+		m.lastFields = jsonData[0]
+	}
+}
+
+func (m *mockCustomLogger) Info(msg string, jsonData ...map[string]interface{}) {
+	m.infoCalled = true
+	m.lastMessage = msg
+	if len(jsonData) > 0 {
+		m.lastFields = jsonData[0]
+	}
+}
+
+func (m *mockCustomLogger) Warning(msg string, jsonData ...map[string]interface{}) {
+	m.warnCalled = true
+	m.lastMessage = msg
+	if len(jsonData) > 0 {
+		m.lastFields = jsonData[0]
+	}
+}
+
+func (m *mockCustomLogger) reset() {
+	m.errorCalled = false
+	m.infoCalled = false
+	m.warnCalled = false
+	m.lastMessage = ""
+	m.lastFields = nil
 }

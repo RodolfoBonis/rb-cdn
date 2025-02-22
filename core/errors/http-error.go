@@ -12,6 +12,8 @@ type HttpError struct {
 	StackTrace string `json:"stack_trace,omitempty"`
 }
 
+var getEnvironment = config.EnvironmentConfig
+
 func (e *HttpError) ToMap() map[string]interface{} {
 	stackTrace := callers()
 	return map[string]interface{}{
@@ -27,7 +29,7 @@ func NewHTTPError(statusCode int, message string) *HttpError {
 		Message:    message,
 	}
 
-	if config.EnvironmentConfig() == entities.Environment.Development {
+	if getEnvironment() == entities.Environment.Development {
 		stacktrace := callers()
 		httpError.StackTrace = stacktrace.String()
 	}
