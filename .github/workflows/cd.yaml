@@ -200,7 +200,8 @@ jobs:
         if: ${{ needs.build_and_deploy.result != 'success' }}
         run: |
           messages=$(cat commit_messages.txt)
-          echo "messages=$(echo "$messages" | jq -R -s -c 'split("")')" >> $GITHUB_OUTPUT
+          printf 'messages<<EOF\n%s\nEOF\n' "$messages" >> $GITHUB_OUTPUT
+
 
       - if: ${{ needs.build_and_deploy.result == 'success' }}
         name: Send Success Message via Telegram
@@ -208,8 +209,8 @@ jobs:
         with:
           token: ${{ secrets.BOTTOKEN }}
           chat_id: ${{ secrets.CHAT_ID }}
-          message_thread_id: ${{ secrets.THREAD_ID }}
           parse_mode: 'markdown'
+          message_thread_id: ${{ secrets.THREAD_ID }}
           text: |
             🚀 *Deployment Successful!*
             
@@ -222,7 +223,6 @@ jobs:
             
             ✅ Deployment Status: Success
             🔄 ArgoCD Sync: Completed
-            📦 Image: ${{ needs.build_and_deploy.outputs.IMAGE_URL }}
             
             🎉 Deployment completed successfully!
 
@@ -232,22 +232,21 @@ jobs:
         with:
           token: ${{ secrets.BOTTOKEN }}
           chat_id: ${{ secrets.CHAT_ID }}
-          message_thread_id: ${{ secrets.THREAD_ID }}
           parse_mode: 'markdown'
+          message_thread_id: ${{ secrets.THREAD_ID }}
           text: |
             ❌ *Deployment Failed!*
-            
+
             *Error Details:*
             • Repository: ${{ github.repository }}
             • Triggered by: ${{ github.actor }}
             • Commit: ${{ github.sha }}
-            
+
             🔍 *Debug Information:*
             • Build Status: ${{ needs.build_and_deploy.result }}
             • Commit URL: https://github.com/${{ github.repository }}/commit/${{ github.sha }}
-            
-            📋 *Recent Changes:*
-            ${{ join(fromJSON(steps.get_messages.outputs.messages), '\n') }}
-            
-            ⚠️ [Check GitHub Actions Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
+            📋 *Recent Changes:*
+            ${{ steps.get_messages.outputs.messages }}
+
+            ⚠️ [Check GitHub Actions Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
