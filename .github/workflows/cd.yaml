@@ -218,7 +218,7 @@ jobs:
             • Created by: ${{ github.actor }}
             • Repository: ${{ github.repository }}
             
-            📝 *Release Notes:* [Release ${{ needs.build_and_deploy.outputs.version }}](https://github.com/${{ github.repository }}/releases/tag/v${{ needs.build_and_deploy.outputs.VERSION }})
+            📝 *Release Notes:* [Release ${{ needs.build_and_deploy.outputs.version }}](https://github.com/${{ github.repository }}/releases/tag/v${{ needs.build_and_deploy.outputs.version }})
             
             ✅ Deployment Status: Success
             🔄 ArgoCD Sync: Completed
