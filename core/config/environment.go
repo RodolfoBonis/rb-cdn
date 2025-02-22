@@ -97,10 +97,11 @@ func EnvAmqpConnection() string {
 	return fmt.Sprintf("amqp://%s:%s@%s/", user, password, host)
 }
 
+var osExit = os.Exit
+
 func LoadEnvVars() {
 	env := EnvironmentConfig()
 	if env == entities.Environment.Production || env == entities.Environment.Test {
-		fmt.Printf("Not using .env file in production or staging")
 		return
 	}
 
@@ -114,6 +115,6 @@ func LoadEnvVars() {
 
 	if err != nil {
 		fmt.Printf(".env file not loaded")
-		os.Exit(1)
+		osExit(1)
 	}
 }

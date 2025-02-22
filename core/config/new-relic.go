@@ -3,11 +3,14 @@ package config
 import (
 	"fmt"
 	"github.com/newrelic/go-agent/v3/newrelic"
-	"os"
+)
+
+var (
+	newrelicNewApplication = newrelic.NewApplication
 )
 
 func NewRelicConfig() *newrelic.Application {
-	app, err := newrelic.NewApplication(
+	app, err := newrelicNewApplication(
 		newrelic.ConfigAppName(EnvNewRelic().AppName),
 		newrelic.ConfigLicense(EnvNewRelic().License),
 		newrelic.ConfigDistributedTracerEnabled(true),
@@ -15,7 +18,8 @@ func NewRelicConfig() *newrelic.Application {
 
 	if err != nil {
 		fmt.Printf("Error Relic initialization failed: %v\n", err)
-		os.Exit(1)
+		osExit(1)
+		return nil // for testing purposes
 	}
 
 	return app
