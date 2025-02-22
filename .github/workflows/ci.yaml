@@ -30,6 +30,22 @@ jobs:
           token: ${{ secrets.GH_TOKEN }}
           fetch-depth: 0
 
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.22
+
+      - name: Run Tests with Coverage
+        run: |
+          go test ./... -coverprofile=coverage.out -covermode=atomic
+          go tool cover -func=coverage.out
+
+      - name: Convert coverage to SonarQube format
+        run: |
+          echo "mode: atomic" > coverage.out.tmp
+          tail -n +2 coverage.out >> coverage.out.tmp
+          mv coverage.out.tmp coverage.out
+
       - name: Run GoSec
         uses: securego/gosec@v2.21.4
         continue-on-error: true
@@ -48,7 +64,11 @@ jobs:
             -Dsonar.sources=.
             -Dsonar.go.gopath=${{ env.GOPATH }}
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
+            -Dsonar.go.coverage.reportPaths=coverage.out
             -Dsonar.externalIssuesReportPaths=gosec.json
+            -Dsonar.coverage.exclusions=**/*_test.go
+            -Dsonar.go.tests.reportPaths=coverage.out
+            -Dsonar.test.inclusions=**/*_test.go
 
       - uses: sonarsource/sonarqube-quality-gate-action@master
         id: sonar_quality_gate
