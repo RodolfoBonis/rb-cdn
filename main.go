@@ -70,24 +70,12 @@ func main() {
 }
 
 func init() {
+	initializeApp()
+}
 
+func initializeApp() {
 	config.LoadEnvVars()
-
 	logger.InitLogger()
-
-	// Use this for open connection with DataBase
-	//appError := services.OpenConnection()
-	//
-	//if appError != nil {
-	//	logger.Log.Error(appError.Message, appError.ToMap())
-	//	panic(appError)
-	//}
-
-	// Use this for Run Yours migrations
-	// services.RunMigrations()
-
-	// Use this for open connection with RabbitMQ
-	// services.StartAmqpConnection()
 
 	docs.SwaggerInfo.Title = "Rb CDN"
 	docs.SwaggerInfo.Description = "This is a service for upload any media file to MINIO"

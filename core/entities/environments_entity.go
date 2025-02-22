@@ -1,13 +1,11 @@
 package entities
 
-type environmentsEntity struct {
+var Environment = struct {
 	Development string
-	Staging     string
 	Production  string
-}
-
-var Environment = environmentsEntity{
+	Test        string
+}{
 	Development: "development",
-	Staging:     "staging",
 	Production:  "production",
+	Test:        "test",
 }

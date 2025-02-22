@@ -80,7 +80,7 @@ func (uc *UploadHandler) Upload(c *gin.Context) {
 	uc.log.Info(fmt.Sprintf("Sending %s to Bucket: %s", objectName, apiKeyData.Bucket))
 	filePath, appErr := uc.minioService.UploadObject(apiKeyData.Bucket, fileEntity, minio.PutObjectOptions{ContentType: contentType})
 	if appErr != nil {
-		c.String(http.StatusInternalServerError, fmt.Sprintf("Erro ao fazer upload: %s", appErr))
+		c.JSON(http.StatusInternalServerError, appErr)
 		return
 	}
 

@@ -6,19 +6,22 @@ import (
 	"github.com/RodolfoBonis/rb-cdn/core/errors"
 	"github.com/RodolfoBonis/rb-cdn/core/logger"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 var tagApiKey = "X-Api-Key"
 
 func ProtectWithApiKey(handler gin.HandlerFunc) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		accessToken := c.GetHeader(tagApiKey)
+		apiKey := c.GetHeader("X-API-Key")
 
-		if accessToken == "" {
-			accessToken = c.Query(tagApiKey)
+		if apiKey == "" {
+			c.AbortWithStatus(http.StatusUnauthorized)
+			logger.Log.Error("API Key is required")
+			return
 		}
 
-		if len(accessToken) < 1 {
+		if len(apiKey) < 1 {
 			appError := errors.MiddlewareError("API Key is required")
 			httpError := appError.ToHttpError()
 			logger.Log.Error(appError.Message, appError.ToMap())
@@ -26,10 +29,10 @@ func ProtectWithApiKey(handler gin.HandlerFunc) gin.HandlerFunc {
 			return
 		}
 
-		configs, err := keyGuardian.ValidateAPIKey(accessToken, config.EnvServiceId())
+		configs, err := keyGuardian.ValidateAPIKey(apiKey, config.EnvServiceId())
 
 		if err != nil {
-			appError := errors.MiddlewareError(err.Error())
+			appError := errors.UnauthorizedError()
 			httpError := appError.ToHttpError()
 			logger.Log.Error(appError.Message, appError.ToMap())
 			c.AbortWithStatusJSON(httpError.StatusCode, httpError)

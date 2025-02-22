@@ -2,11 +2,16 @@ package config
 
 import (
 	"fmt"
+	"github.com/RodolfoBonis/rb-cdn/core/entities"
 	"github.com/getsentry/sentry-go"
 	"os"
 )
 
 func SentryConfig() {
+	if os.Getenv("ENVIRONMENT") == entities.Environment.Test {
+		return
+	}
+	
 	if err := sentry.Init(sentry.ClientOptions{
 		Dsn:              EnvSentryDSN(),
 		EnableTracing:    true,

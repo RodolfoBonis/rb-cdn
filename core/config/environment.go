@@ -99,7 +99,7 @@ func EnvAmqpConnection() string {
 
 func LoadEnvVars() {
 	env := EnvironmentConfig()
-	if env == entities.Environment.Production || env == entities.Environment.Staging {
+	if env == entities.Environment.Production || env == entities.Environment.Test {
 		fmt.Printf("Not using .env file in production or staging")
 		return
 	}
