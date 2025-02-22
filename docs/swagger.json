@@ -4,65 +4,79 @@
         "contact": {}
     },
     "paths": {
-        "/auth": {
-            "post": {
-                "description": "performs auth of user",
+        "/cdn/{bucket}/{objectPath}": {
+            "get": {
+                "description": "Retrieves media files from the CDN, supporting images and videos",
                 "consumes": [
                     "application/json"
                 ],
                 "produces": [
-                    "application/json"
+                    "application/octet-stream",
+                    "image/jpeg",
+                    "image/png"
                 ],
                 "tags": [
-                    "Auth"
+                    "Media"
                 ],
-                "summary": "Validate auth",
+                "summary": "Get media from CDN",
                 "parameters": [
                     {
-                        "description": "Login Data",
-                        "name": "_",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/entities.RequestLoginEntity"
-                        }
+                        "type": "string",
+                        "description": "Bucket name",
+                        "name": "bucket",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Path to the object in the bucket",
+                        "name": "objectPath",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "API Key for authentication",
+                        "name": "X-API-KEY",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Media file",
                         "schema": {
-                            "$ref": "#/definitions/entities.LoginResponseEntity"
+                            "type": "file"
+                        }
+                    },
+                    "204": {
+                        "description": "No Content",
+                        "schema": {
+                            "$ref": "#/definitions/errors.HttpError"
+                        }
+                    },
+                    "307": {
+                        "description": "Temporary Redirect",
+                        "schema": {
+                            "$ref": "#/definitions/errors.HttpError"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/utils.HttpError"
+                            "$ref": "#/definitions/errors.HttpError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/utils.HttpError"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/utils.HttpError"
-                        }
-                    },
-                    "409": {
-                        "description": "Conflict",
-                        "schema": {
-                            "$ref": "#/definitions/utils.HttpError"
+                            "$ref": "#/definitions/errors.HttpError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/utils.HttpError"
+                            "$ref": "#/definitions/errors.HttpError"
                         }
                     }
                 }
@@ -91,137 +105,175 @@
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/utils.HttpError"
+                            "$ref": "#/definitions/errors.HttpError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/utils.HttpError"
+                            "$ref": "#/definitions/errors.HttpError"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/utils.HttpError"
+                            "$ref": "#/definitions/errors.HttpError"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/utils.HttpError"
+                            "$ref": "#/definitions/errors.HttpError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/utils.HttpError"
+                            "$ref": "#/definitions/errors.HttpError"
                         }
                     }
                 }
             }
         },
-        "/logout": {
-            "post": {
-                "description": "Logout the User",
+        "/stream/{objectPath}": {
+            "get": {
+                "description": "Streams video content from MinIO with support for range requests",
                 "consumes": [
                     "application/json"
                 ],
                 "produces": [
-                    "application/json"
+                    "video/mp4"
                 ],
                 "tags": [
-                    "Auth"
+                    "Stream"
                 ],
-                "summary": "Logout",
+                "summary": "Stream video content",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Object path in the bucket",
+                        "name": "objectPath",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Range header for partial content requests",
+                        "name": "Range",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "API Key for authentication",
+                        "name": "X-API-KEY",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Full video content",
                         "schema": {
-                            "type": "boolean"
+                            "type": "file"
+                        }
+                    },
+                    "206": {
+                        "description": "Partial video content",
+                        "schema": {
+                            "type": "file"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/utils.HttpError"
+                            "$ref": "#/definitions/errors.HttpError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/utils.HttpError"
+                            "$ref": "#/definitions/errors.HttpError"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/utils.HttpError"
-                        }
-                    },
-                    "409": {
-                        "description": "Conflict",
-                        "schema": {
-                            "$ref": "#/definitions/utils.HttpError"
+                            "$ref": "#/definitions/errors.HttpError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/utils.HttpError"
+                            "$ref": "#/definitions/errors.HttpError"
                         }
                     }
                 }
             }
         },
-        "/refresh": {
+        "/upload": {
             "post": {
-                "description": "Refresh User Token",
+                "description": "Uploads a file to the CDN storage and returns the access URL",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Auth"
+                    "upload"
                 ],
-                "summary": "Refresh Login Access Token",
+                "summary": "Upload a file to CDN",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "File to upload",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Folder name (optional)",
+                        "name": "folder",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "API Key for authentication",
+                        "name": "X-API-KEY",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/entities.LoginResponseEntity"
+                            "$ref": "#/definitions/entities.UploadResponseEntity"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/utils.HttpError"
+                            "$ref": "#/definitions/errors.HttpError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/utils.HttpError"
+                            "$ref": "#/definitions/errors.HttpError"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/utils.HttpError"
-                        }
-                    },
-                    "409": {
-                        "description": "Conflict",
-                        "schema": {
-                            "$ref": "#/definitions/utils.HttpError"
+                            "$ref": "#/definitions/errors.HttpError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/utils.HttpError"
+                            "$ref": "#/definitions/errors.HttpError"
                         }
                     }
                 }
@@ -229,48 +281,27 @@
         }
     },
     "definitions": {
-        "entities.LoginResponseEntity": {
-            "description": "LoginResponseEntity model data",
+        "entities.UploadResponseEntity": {
             "type": "object",
             "properties": {
-                "accessToken": {
-                    "description": "Token to access this API",
+                "message": {
                     "type": "string"
                 },
-                "expiresIn": {
-                    "description": "Time to expires token in int",
-                    "type": "integer"
-                },
-                "refreshToken": {
-                    "description": "Token to refresh Access Token",
+                "url": {
                     "type": "string"
                 }
             }
         },
-        "entities.RequestLoginEntity": {
-            "description": "RequestLoginEntity model data",
-            "type": "object",
-            "properties": {
-                "email": {
-                    "description": "User email",
-                    "type": "string"
-                },
-                "password": {
-                    "description": "User password",
-                    "type": "string"
-                }
-            }
-        },
-        "utils.HttpError": {
+        "errors.HttpError": {
             "type": "object",
             "properties": {
                 "code": {
                     "type": "integer"
                 },
-                "error": {
+                "message": {
                     "type": "string"
                 },
-                "message": {
+                "stack_trace": {
                     "type": "string"
                 }
             }

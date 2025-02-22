@@ -21,6 +21,23 @@ func NewStreamHandler(minioService services.IMinioService, logger *logger.Custom
 	return &StreamHandler{minioService: minioService, logger: logger}
 }
 
+// StreamVideo godoc
+// @Summary Stream video content
+// @Schemes
+// @Description Streams video content from MinIO with support for range requests
+// @Tags Stream
+// @Accept json
+// @Produce video/mp4
+// @Param objectPath path string true "Object path in the bucket"
+// @Param Range header string false "Range header for partial content requests"
+// @Param X-API-KEY header string true "API Key for authentication"
+// @Success 200 {file} binary "Full video content"
+// @Success 206 {file} binary "Partial video content"
+// @Failure 400 {object} errors.HttpError
+// @Failure 401 {object} errors.HttpError
+// @Failure 403 {object} errors.HttpError
+// @Failure 500 {object} errors.HttpError
+// @Router /stream/{objectPath} [get]
 func (vc *StreamHandler) StreamVideo(c *gin.Context) {
 	objectName := c.Param("objectPath")[1:]
 

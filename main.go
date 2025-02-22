@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/RodolfoBonis/rb-cdn/core/config"
+	"github.com/RodolfoBonis/rb-cdn/core/entities"
 	"github.com/RodolfoBonis/rb-cdn/core/errors"
 	"github.com/RodolfoBonis/rb-cdn/core/logger"
 	"github.com/RodolfoBonis/rb-cdn/core/middlewares"
@@ -11,6 +12,8 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"os"
+	"strings"
 	"time"
 )
 
@@ -88,8 +91,20 @@ func init() {
 
 	docs.SwaggerInfo.Title = "Rb CDN"
 	docs.SwaggerInfo.Description = "This is a service for upload any media file to MINIO"
-	docs.SwaggerInfo.Version = "0.2.4"
-	docs.SwaggerInfo.Host = fmt.Sprintf("localhost:%s", config.EnvPort())
+
+	versionFileName := "/version.txt"
+
+	if config.EnvironmentConfig() == entities.Environment.Development {
+		versionFileName = "version.txt"
+	}
+
+	version, err := os.ReadFile(versionFileName)
+	if err != nil {
+		docs.SwaggerInfo.Version = "unknown"
+	} else {
+		docs.SwaggerInfo.Version = strings.TrimSpace(string(version))
+	}
+	docs.SwaggerInfo.Host = "rb-cdn.rodolfodebonis.com.br"
 	docs.SwaggerInfo.BasePath = "/v1"
-	docs.SwaggerInfo.Schemes = []string{"http", "https"}
+	docs.SwaggerInfo.Schemes = []string{"https"}
 }
