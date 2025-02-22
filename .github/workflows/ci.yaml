@@ -76,7 +76,8 @@ jobs:
 
   check_vulnerabilities:
     runs-on: ${{ matrix.os }}
-
+    outputs:
+      pr_url: ${{ env.PR_URL }}
     strategy:
       matrix:
         os: [ubuntu-latest]
@@ -170,6 +171,7 @@ jobs:
             • Triggered by: ${{ github.actor }}
             • Commit: ${{ github.sha }}
             • Branch: ${{ github.ref }}
+            • PR URL: ${{ github.event.pull_request.html_url || needs.check_vulnerabilities.outputs.pr_url }}
 
             ✅ CI Status: Success
 
@@ -193,6 +195,6 @@ jobs:
             🔍 *Debug Information:*
             • CI Status: Failure
             • Commit URL: https://github.com/${{ github.repository }}/commit/${{ github.sha }}
-            • PR URL: ${{ env.PR_URL }}
+            • PR URL: ${{ github.event.pull_request.html_url || needs.check_vulnerabilities.outputs.pr_url }}
 
             ⚠️ [Check GitHub Actions Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
