@@ -32,11 +32,11 @@ func main() {
 
 	newRelicConfig := config.NewRelicConfig()
 
-	_middleware := middlewares.NewMonitoringMiddleware(newRelicConfig)
+	middleware := middlewares.NewMonitoringMiddleware(newRelicConfig)
 
-	app.Use(_middleware.NewRelicMiddleware())
-	app.Use(_middleware.SentryMiddleware())
-	app.Use(_middleware.LogMiddleware)
+	app.Use(middleware.NewRelicMiddleware())
+	app.Use(middleware.SentryMiddleware())
+	app.Use(middleware.LogMiddleware)
 
 	app.Use(gin.Logger())
 	app.Use(gin.Recovery())
