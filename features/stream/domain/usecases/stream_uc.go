@@ -123,7 +123,10 @@ func (vc *StreamHandler) handleRangeRequest(c *gin.Context, obj *minio.Object, r
 }
 
 func (vc *StreamHandler) parseRange(rangeHeader string, contentLength int64) (start, end int64) {
-	fmt.Sscanf(rangeHeader, "bytes=%d-%d", &start, &end)
+	_, err := fmt.Sscanf(rangeHeader, "bytes=%d-%d", &start, &end)
+	if err != nil {
+		return 0, 0
+	}
 	if end == 0 || end >= contentLength {
 		end = contentLength - 1
 	}
