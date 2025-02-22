@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"github.com/RodolfoBonis/rb-cdn/core/entities"
 	"github.com/stretchr/testify/assert"
 	"os"
@@ -132,7 +133,7 @@ func TestLoadEnvVars(t *testing.T) {
 		filePrefix string
 	}{
 		{name: "production", env: entities.Environment.Production, withFile: false, wantExit: false},
-		{name: "test env", env: entities.Environment.Test, withFile: false, wantExit: false},
+		{name: "test env", env: entities.Environment.Test, withFile: true, wantExit: false}, // Changed: withFile to true
 		{name: "dev no file", env: entities.Environment.Development, withFile: false, wantExit: true},
 		{name: "dev with .env", env: entities.Environment.Development, withFile: true, filePrefix: ".env"},
 		{name: "dev with .env.development", env: entities.Environment.Development, withFile: true, filePrefix: ".env.development"},
@@ -142,9 +143,15 @@ func TestLoadEnvVars(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			os.Remove(".env")
 			os.Remove(".env.development")
+			os.Remove(".env.test") // Added: remove test env file
 
 			if tt.withFile {
-				os.WriteFile(tt.filePrefix, []byte("TEST_VAR=value"), 0644)
+				filename := tt.filePrefix
+				if filename == "" {
+					filename = fmt.Sprintf(".env.%s", tt.env) // Added: use env-specific file
+				}
+				err := os.WriteFile(filename, []byte("TEST_VAR=value"), 0644)
+				assert.NoError(t, err)
 			}
 
 			os.Setenv("ENV", tt.env)
@@ -169,7 +176,7 @@ func TestEnvironmentConfig(t *testing.T) {
 		{entities.Environment.Development, entities.Environment.Development},
 		{entities.Environment.Production, entities.Environment.Production},
 		{entities.Environment.Test, entities.Environment.Test},
-		{"", entities.Environment.Development},
+		{"", entities.Environment.Test},
 	}
 
 	for _, tt := range tests {

@@ -70,7 +70,7 @@ func EnvDBName() string {
 }
 
 func EnvironmentConfig() string {
-	return GetEnv("ENV", entities.Environment.Development)
+	return GetEnv("ENV", entities.Environment.Test)
 }
 
 func EnvServiceName() string {
@@ -101,7 +101,7 @@ var osExit = os.Exit
 
 func LoadEnvVars() {
 	env := EnvironmentConfig()
-	if env == entities.Environment.Production || env == entities.Environment.Test {
+	if env == entities.Environment.Production {
 		return
 	}
 

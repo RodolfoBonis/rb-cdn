@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 )
 
@@ -19,6 +20,10 @@ type testCase struct {
 }
 
 func init() {
+	// Set environment variables first
+	os.Setenv("NEW_RELIC_LICENSE_KEY", "dummy-key-for-testing-40chars-length-her")
+
+	// Then initialize other components
 	gin.SetMode(gin.TestMode)
 	logger.InitLogger()
 }
@@ -31,7 +36,7 @@ func setupTestRouter() *gin.Engine {
 	router.Use(gin.Recovery())
 	router.Use(gin.Logger())
 
-	// Swagger setup
+	// Swagger setup remains the same
 	docs.SwaggerInfo.Title = "RB CDN API"
 	docs.SwaggerInfo.Description = "CDN API documentation"
 	docs.SwaggerInfo.Version = "1.0"

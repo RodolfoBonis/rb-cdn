@@ -77,21 +77,19 @@ func initializeApp() {
 	config.LoadEnvVars()
 	logger.InitLogger()
 
+	versionFileName := "version.txt"
+	if config.EnvironmentConfig() == entities.Environment.Production {
+		versionFileName = "/version.txt"
+	}
+
+	version := "unknown"
+	if content, err := os.ReadFile(versionFileName); err == nil {
+		version = strings.TrimSpace(string(content))
+	}
+
 	docs.SwaggerInfo.Title = "Rb CDN"
 	docs.SwaggerInfo.Description = "This is a service for upload any media file to MINIO"
-
-	versionFileName := "/version.txt"
-
-	if config.EnvironmentConfig() == entities.Environment.Development {
-		versionFileName = "version.txt"
-	}
-
-	version, err := os.ReadFile(versionFileName)
-	if err != nil {
-		docs.SwaggerInfo.Version = "unknown"
-	} else {
-		docs.SwaggerInfo.Version = strings.TrimSpace(string(version))
-	}
+	docs.SwaggerInfo.Version = version
 	docs.SwaggerInfo.Host = "rb-cdn.rodolfodebonis.com.br"
 	docs.SwaggerInfo.BasePath = "/v1"
 	docs.SwaggerInfo.Schemes = []string{"https"}

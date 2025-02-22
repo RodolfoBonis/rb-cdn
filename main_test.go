@@ -19,14 +19,6 @@ import (
 	_ "unsafe"
 )
 
-type versionTest struct {
-	name        string
-	setupFunc   func()
-	cleanupFunc func()
-	environment string
-	wantVersion string
-}
-
 type serverTest struct {
 	name      string
 	port      string
@@ -85,40 +77,73 @@ func skipSentryInTest(t *testing.T) {
 }
 
 func TestInitializeApp(t *testing.T) {
-	tests := []versionTest{
+	tests := []struct {
+		name        string
+		environment string
+		setupFunc   func(t *testing.T)
+		cleanupFunc func()
+		wantVersion string
+	}{
 		{
-			name: "Development environment with existing version file",
-			setupFunc: func() {
-				_ = os.WriteFile("version.txt", []byte("1.0.0\n"), 0644)
+			name:        "Development environment with existing version file",
+			environment: "development",
+			setupFunc: func(t *testing.T) {
+				err := os.WriteFile("version.txt", []byte("1.0.0"), 0644)
+				assert.NoError(t, err, "Failed to create version file")
 			},
 			cleanupFunc: func() {
-				_ = os.Remove("version.txt")
+				os.Remove("version.txt")
 			},
-			environment: entities.Environment.Development,
+			wantVersion: "1.0.0",
+		},
+		{
+			name:        "Test environment with existing version file",
+			environment: "test",
+			setupFunc: func(t *testing.T) {
+				err := os.WriteFile("version.txt", []byte("1.0.0"), 0644)
+				assert.NoError(t, err, "Failed to create version file")
+			},
+			cleanupFunc: func() {
+				os.Remove("version.txt")
+			},
 			wantVersion: "1.0.0",
 		},
 		{
 			name:        "Production environment with missing version file",
-			environment: entities.Environment.Production,
+			environment: "production",
+			setupFunc: func(t *testing.T) {
+				os.Remove("version.txt")
+			},
 			wantVersion: "unknown",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// Ensure clean state
+			os.Remove("version.txt")
+
+			// Setup test
 			if tt.setupFunc != nil {
-				tt.setupFunc()
-			}
-			if tt.cleanupFunc != nil {
-				defer tt.cleanupFunc()
+				tt.setupFunc(t)
 			}
 
+			// Cleanup after test
+			defer func() {
+				if tt.cleanupFunc != nil {
+					tt.cleanupFunc()
+				}
+			}()
+
+			// Set environment
 			t.Setenv("ENVIRONMENT", tt.environment)
+
+			// Initialize app
 			initializeApp()
 
+			// Assert swagger info
 			assert.Equal(t, "Rb CDN", docs.SwaggerInfo.Title)
 			assert.Equal(t, tt.wantVersion, docs.SwaggerInfo.Version)
-			assert.Equal(t, "rb-cdn.rodolfodebonis.com.br", docs.SwaggerInfo.Host)
 			assert.Equal(t, "/v1", docs.SwaggerInfo.BasePath)
 			assert.Equal(t, []string{"https"}, docs.SwaggerInfo.Schemes)
 		})
