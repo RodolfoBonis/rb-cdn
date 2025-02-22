@@ -107,9 +107,6 @@ jobs:
       - name: Install Python dependencies
         run: pip install -r .config/scripts/requirements.txt
 
-      - name: Clear Go Module Cache
-        run: go clean -modcache
-
       - name: Verify Dependencies Vulnerabilities
         id: govulncheck
         uses: golang/govulncheck-action@v1
@@ -145,7 +142,57 @@ jobs:
           git commit -m "fix: address vulnerabilities"
           git push origin $BRANCH_NAME
           gh pr create --title "Fix vulnerabilities" --body "This PR addresses the vulnerabilities found in the main branch." --base main --head $BRANCH_NAME
+          pr_url=$(gh pr create --title "Fix vulnerabilities" --base main --head $BRANCH_NAME --json url --jq '.url')
+          echo "PR_URL=$pr_url" >> $GITHUB_ENV
 
       - name: Fail CI if vulnerabilities are found
         if: ${{ steps.govulncheck.outcome == 'failure' }}
         run: exit 1
+
+  notify:
+    needs: [sonar_scan, check_vulnerabilities]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Send Success Message via Telegram
+        if: ${{ needs.sonar_scan.result == 'success' && needs.check_vulnerabilities.result == 'success' }}
+        uses: akeylimepie/telegram-action@main
+        with:
+          token: ${{ secrets.BOTTOKEN }}
+          chat_id: ${{ secrets.CHAT_ID }}
+          parse_mode: 'markdown'
+          message_thread_id: ${{ secrets.THREAD_ID }}
+          text: |
+            🚀 *CI Successful!*
+
+            *Details:*
+            • Repository: ${{ github.repository }}
+            • Triggered by: ${{ github.actor }}
+            • Commit: ${{ github.sha }}
+            • Branch: ${{ github.ref_name }}
+
+            ✅ CI Status: Success
+
+      - name: Send Error Message via Telegram
+        if: ${{ needs.sonar_scan.result != 'success' || needs.check_vulnerabilities.result != 'success' }}
+        uses: akeylimepie/telegram-action@main
+        with:
+          token: ${{ secrets.BOTTOKEN }}
+          chat_id: ${{ secrets.CHAT_ID }}
+          parse_mode: 'markdown'
+          message_thread_id: ${{ secrets.THREAD_ID }}
+          text: |
+            ❌ *CI Failed!*
+
+            *Error Details:*
+            • Repository: ${{ github.repository }}
+            • Triggered by: ${{ github.actor }}
+            • Commit: ${{ github.sha }}
+            • Branch: ${{ github.ref_name }}
+
+            🔍 *Debug Information:*
+            • CI Status: Failure
+            • Commit URL: https://github.com/${{ github.repository }}/commit/${{ github.sha }}
+            • PR URL: ${{ env.PR_URL }}
+
+            ⚠️ [Check GitHub Actions Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})

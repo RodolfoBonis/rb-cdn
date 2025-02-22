@@ -14,7 +14,7 @@ metadata:
     - backstage:techdocs
     - rb-cdn
 spec:
-    type: service
+    type: openapi
     owner: default/rbtech
     lifecycle: production
     definition:
