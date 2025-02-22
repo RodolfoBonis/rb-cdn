@@ -77,8 +77,7 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' }}
     runs-on: ${{ matrix.os }}
     outputs:
-      VERSION: ${{ env.VERSION }}
-      IMAGE_URL: ${{ env.IMAGE_URL }}
+      version: ${{ env.VERSION }}
     strategy:
       matrix:
         os: [ubuntu-latest]
@@ -215,11 +214,11 @@ jobs:
             🚀 *Deployment Successful!*
             
             *New Release Details:*
-            • Version: ${{ needs.build_and_deploy.outputs.VERSION }}
+            • Version: ${{ needs.build_and_deploy.outputs.version }}
             • Created by: ${{ github.actor }}
             • Repository: ${{ github.repository }}
             
-            📝 *Release Notes:* [Release ${{ needs.build_and_deploy.outputs.VERSION }}](https://github.com/${{ github.repository }}/releases/tag/v${{ needs.build_and_deploy.outputs.VERSION }})
+            📝 *Release Notes:* [Release ${{ needs.build_and_deploy.outputs.version }}](https://github.com/${{ github.repository }}/releases/tag/v${{ needs.build_and_deploy.outputs.VERSION }})
             
             ✅ Deployment Status: Success
             🔄 ArgoCD Sync: Completed
