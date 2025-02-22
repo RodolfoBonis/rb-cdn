@@ -169,7 +169,7 @@ jobs:
             • Repository: ${{ github.repository }}
             • Triggered by: ${{ github.actor }}
             • Commit: ${{ github.sha }}
-            • Branch: ${{ github.ref_name }}
+            • Branch: ${{ github.ref }}
 
             ✅ CI Status: Success
 
@@ -188,7 +188,7 @@ jobs:
             • Repository: ${{ github.repository }}
             • Triggered by: ${{ github.actor }}
             • Commit: ${{ github.sha }}
-            • Branch: ${{ github.ref_name }}
+            • Branch: ${{ github.ref }}
 
             🔍 *Debug Information:*
             • CI Status: Failure

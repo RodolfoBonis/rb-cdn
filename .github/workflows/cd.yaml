@@ -223,7 +223,6 @@ jobs:
             
             ✅ Deployment Status: Success
             🔄 ArgoCD Sync: Completed
-            📦 Image: ${{ needs.build_and_deploy.outputs.IMAGE_URL }}
             
             🎉 Deployment completed successfully!
 
