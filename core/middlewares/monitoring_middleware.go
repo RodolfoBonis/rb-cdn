@@ -12,11 +12,13 @@ import (
 
 type MonitoringMiddleware struct {
 	newRelicConfig *newrelic.Application
+	logger         logger.CustomLogger
 }
 
-func NewMonitoringMiddleware(newRelicConfig *newrelic.Application) *MonitoringMiddleware {
+func NewMonitoringMiddleware(app *newrelic.Application, logger logger.CustomLogger) *MonitoringMiddleware {
 	return &MonitoringMiddleware{
-		newRelicConfig: newRelicConfig,
+		newRelicConfig: app,
+		logger:         logger,
 	}
 }
 
@@ -44,9 +46,9 @@ func (m *MonitoringMiddleware) LogMiddleware(ctx *gin.Context) {
 
 	if logMessage != "" {
 		if isSuccessStatusCode(ctx.Writer.Status()) {
-			logger.Log.Info(logMessage)
+			m.logger.Info(logMessage)
 		} else {
-			logger.Log.Error(logMessage)
+			m.logger.Error(logMessage)
 		}
 	}
 }

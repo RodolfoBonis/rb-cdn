@@ -7,13 +7,34 @@ import (
 	"github.com/RodolfoBonis/rb-cdn/core/logger"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"sync"
 )
 
-var tagApiKey = "X-Api-Key"
+var (
+	tagApiKey   = "X-API-Key"
+	validatorMu sync.RWMutex
+	validator   APIKeyValidator
+)
+
+type APIKeyValidator interface {
+	ValidateAPIKey(apiKey string, serviceId string) (keyGuardian.ApiKeyData, error)
+}
+
+func OverrideValidatorForTest(v APIKeyValidator) {
+	validatorMu.Lock()
+	defer validatorMu.Unlock()
+	validator = v
+}
+
+func RestoreDefaultValidator() {
+	validatorMu.Lock()
+	defer validatorMu.Unlock()
+	validator = nil
+}
 
 func ProtectWithApiKey(handler gin.HandlerFunc) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		apiKey := c.GetHeader("X-API-Key")
+		apiKey := c.GetHeader(tagApiKey)
 
 		if apiKey == "" {
 			c.AbortWithStatus(http.StatusUnauthorized)
@@ -21,15 +42,16 @@ func ProtectWithApiKey(handler gin.HandlerFunc) gin.HandlerFunc {
 			return
 		}
 
-		if len(apiKey) < 1 {
-			appError := errors.MiddlewareError("API Key is required")
-			httpError := appError.ToHttpError()
-			logger.Log.Error(appError.Message, appError.ToMap())
-			c.AbortWithStatusJSON(httpError.StatusCode, httpError)
-			return
-		}
+		var configs keyGuardian.ApiKeyData
+		var err error
 
-		configs, err := keyGuardian.ValidateAPIKey(apiKey, config.EnvServiceId())
+		validatorMu.RLock()
+		if validator != nil {
+			configs, err = validator.ValidateAPIKey(apiKey, config.EnvServiceId())
+		} else {
+			configs, err = keyGuardian.ValidateAPIKey(apiKey, config.EnvServiceId())
+		}
+		validatorMu.RUnlock()
 
 		if err != nil {
 			appError := errors.UnauthorizedError()

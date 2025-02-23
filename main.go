@@ -32,7 +32,7 @@ func main() {
 
 	newRelicConfig := config.NewRelicConfig()
 
-	middleware := middlewares.NewMonitoringMiddleware(newRelicConfig)
+	middleware := middlewares.NewMonitoringMiddleware(newRelicConfig, *logger.Log)
 
 	app.Use(middleware.NewRelicMiddleware())
 	app.Use(middleware.SentryMiddleware())
