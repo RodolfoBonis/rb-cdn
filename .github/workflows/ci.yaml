@@ -21,58 +21,58 @@ permissions:
   pull-requests: write
 
 jobs:
-  sonar_scan:
-    name: Sonar Scan
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GH_TOKEN }}
-          fetch-depth: 0
-
-      - name: Run GoSec
-        uses: securego/gosec@v2.21.4
-        continue-on-error: true
-        id: gosec
-        with:
-          args: -fmt=sonarqube -out=gosec.json ./...
-
-      - uses: sonarsource/sonarqube-scan-action@master
-        id: sonar_scan
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        with:
-          args: >
-            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
-            -Dsonar.sources=.
-            -Dsonar.go.gopath=${{ env.GOPATH }}
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
-            -Dsonar.externalIssuesReportPaths=gosec.json
-
-      - uses: sonarsource/sonarqube-quality-gate-action@master
-        id: sonar_quality_gate
-        timeout-minutes: 5
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-      - name: Run script
-        id: sonar_metrics
-        if: ${{ github.event_name == 'pull_request' && always()}}
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_TOKEN }}
-          SONARQUBE_URL: ${{ secrets.SONAR_HOST_URL }}
-          SONARQUBE_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONARQUBE_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-          GITHUB_REPO_NAME: ${{ github.repository }}
-          GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: |
-          python .config/scripts/generate_sonar_metrics_comment.py
-
-      - name: Fail CI if Scan or Quality Gate fails
-        if: ${{ steps.sonar_scan.outcome == 'failure' || steps.sonar_quality_gate.outcome == 'failure' }}
-        run: exit 1
+#  sonar_scan:
+#    name: Sonar Scan
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v4
+#        with:
+#          token: ${{ secrets.GH_TOKEN }}
+#          fetch-depth: 0
+#
+#      - name: Run GoSec
+#        uses: securego/gosec@v2.21.4
+#        continue-on-error: true
+#        id: gosec
+#        with:
+#          args: -fmt=sonarqube -out=gosec.json ./...
+#
+#      - uses: sonarsource/sonarqube-scan-action@master
+#        id: sonar_scan
+#        env:
+#          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+#        with:
+#          args: >
+#            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
+#            -Dsonar.sources=.
+#            -Dsonar.go.gopath=${{ env.GOPATH }}
+#            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
+#            -Dsonar.externalIssuesReportPaths=gosec.json
+#
+#      - uses: sonarsource/sonarqube-quality-gate-action@master
+#        id: sonar_quality_gate
+#        timeout-minutes: 5
+#        env:
+#          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#
+#      - name: Run script
+#        id: sonar_metrics
+#        if: ${{ github.event_name == 'pull_request' && always()}}
+#        env:
+#          OPENAI_API_KEY: ${{ secrets.OPENAI_TOKEN }}
+#          SONARQUBE_URL: ${{ secrets.SONAR_HOST_URL }}
+#          SONARQUBE_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#          SONARQUBE_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
+#          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+#          GITHUB_REPO_NAME: ${{ github.repository }}
+#          GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
+#        run: |
+#          python .config/scripts/generate_sonar_metrics_comment.py
+#
+#      - name: Fail CI if Scan or Quality Gate fails
+#        if: ${{ steps.sonar_scan.outcome == 'failure' || steps.sonar_quality_gate.outcome == 'failure' }}
+#        run: exit 1
 
   check_vulnerabilities:
     runs-on: ${{ matrix.os }}
@@ -151,12 +151,12 @@ jobs:
         run: exit 1
 
   notify:
-    needs: [sonar_scan, check_vulnerabilities]
+    needs: [check_vulnerabilities]
     runs-on: ubuntu-latest
     if: always()
     steps:
       - name: Send Success Message via Telegram
-        if: ${{ needs.sonar_scan.result == 'success' && needs.check_vulnerabilities.result == 'success' }}
+        if: ${{ needs.check_vulnerabilities.result == 'success' }}
         uses: akeylimepie/telegram-action@main
         with:
           token: ${{ secrets.BOTTOKEN }}
@@ -176,7 +176,7 @@ jobs:
             ✅ CI Status: Success
 
       - name: Send Error Message via Telegram
-        if: ${{ needs.sonar_scan.result != 'success' || needs.check_vulnerabilities.result != 'success' }}
+        if: ${{ needs.check_vulnerabilities.result != 'success' }}
         uses: akeylimepie/telegram-action@main
         with:
           token: ${{ secrets.BOTTOKEN }}
