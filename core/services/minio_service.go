@@ -34,7 +34,7 @@ func NewMinioService() IMinioService {
 
 func (service *MinioService) startMinioService() (*minio.Client, *errors.AppError) {
 
-	client, err := minio.New(service.host, service.accessId, service.secretKey, false)
+	client, err := minio.New(service.host, service.accessId, service.secretKey, true)
 
 	if err != nil {
 		return nil, errors.ServiceError(err.Error())

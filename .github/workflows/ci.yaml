@@ -171,12 +171,12 @@ jobs:
         run: exit 1
 
   notify:
-    needs: [sonar_scan, check_vulnerabilities]
+    needs: [check_vulnerabilities]
     runs-on: ubuntu-latest
     if: always()
     steps:
       - name: Send Success Message via Telegram
-        if: ${{ needs.sonar_scan.result == 'success' && needs.check_vulnerabilities.result == 'success' }}
+        if: ${{ needs.check_vulnerabilities.result == 'success' }}
         uses: akeylimepie/telegram-action@main
         with:
           token: ${{ secrets.BOTTOKEN }}
@@ -196,7 +196,7 @@ jobs:
             ✅ CI Status: Success
 
       - name: Send Error Message via Telegram
-        if: ${{ needs.sonar_scan.result != 'success' || needs.check_vulnerabilities.result != 'success' }}
+        if: ${{ needs.check_vulnerabilities.result != 'success' }}
         uses: akeylimepie/telegram-action@main
         with:
           token: ${{ secrets.BOTTOKEN }}
