@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/RodolfoBonis/rb-cdn/core/config"
+	"github.com/RodolfoBonis/rb-cdn/core/entities"
 	"github.com/RodolfoBonis/rb-cdn/core/errors"
 	"github.com/RodolfoBonis/rb-cdn/core/logger"
 	"github.com/RodolfoBonis/rb-cdn/core/middlewares"
@@ -11,6 +12,8 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"os"
+	"strings"
 	"time"
 )
 
@@ -29,11 +32,11 @@ func main() {
 
 	newRelicConfig := config.NewRelicConfig()
 
-	_middleware := middlewares.NewMonitoringMiddleware(newRelicConfig)
+	middleware := middlewares.NewMonitoringMiddleware(newRelicConfig, *logger.Log)
 
-	app.Use(_middleware.NewRelicMiddleware())
-	app.Use(_middleware.SentryMiddleware())
-	app.Use(_middleware.LogMiddleware)
+	app.Use(middleware.NewRelicMiddleware())
+	app.Use(middleware.SentryMiddleware())
+	app.Use(middleware.LogMiddleware)
 
 	app.Use(gin.Logger())
 	app.Use(gin.Recovery())
@@ -67,29 +70,27 @@ func main() {
 }
 
 func init() {
+	initializeApp()
+}
 
+func initializeApp() {
 	config.LoadEnvVars()
-
 	logger.InitLogger()
 
-	// Use this for open connection with DataBase
-	//appError := services.OpenConnection()
-	//
-	//if appError != nil {
-	//	logger.Log.Error(appError.Message, appError.ToMap())
-	//	panic(appError)
-	//}
+	versionFileName := "version.txt"
+	if config.EnvironmentConfig() == entities.Environment.Production {
+		versionFileName = "/version.txt"
+	}
 
-	// Use this for Run Yours migrations
-	// services.RunMigrations()
-
-	// Use this for open connection with RabbitMQ
-	// services.StartAmqpConnection()
+	version := "unknown"
+	if content, err := os.ReadFile(versionFileName); err == nil {
+		version = strings.TrimSpace(string(content))
+	}
 
 	docs.SwaggerInfo.Title = "Rb CDN"
 	docs.SwaggerInfo.Description = "This is a service for upload any media file to MINIO"
-	docs.SwaggerInfo.Version = "0.2.4"
-	docs.SwaggerInfo.Host = fmt.Sprintf("localhost:%s", config.EnvPort())
+	docs.SwaggerInfo.Version = version
+	docs.SwaggerInfo.Host = "rb-cdn.rodolfodebonis.com.br"
 	docs.SwaggerInfo.BasePath = "/v1"
-	docs.SwaggerInfo.Schemes = []string{"http", "https"}
+	docs.SwaggerInfo.Schemes = []string{"https"}
 }

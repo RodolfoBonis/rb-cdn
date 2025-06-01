@@ -70,7 +70,7 @@ func EnvDBName() string {
 }
 
 func EnvironmentConfig() string {
-	return GetEnv("ENV", entities.Environment.Development)
+	return GetEnv("ENV", entities.Environment.Test)
 }
 
 func EnvServiceName() string {
@@ -97,10 +97,11 @@ func EnvAmqpConnection() string {
 	return fmt.Sprintf("amqp://%s:%s@%s/", user, password, host)
 }
 
+var osExit = os.Exit
+
 func LoadEnvVars() {
 	env := EnvironmentConfig()
-	if env == entities.Environment.Production || env == entities.Environment.Staging {
-		fmt.Printf("Not using .env file in production or staging")
+	if env == entities.Environment.Production {
 		return
 	}
 
@@ -114,6 +115,6 @@ func LoadEnvVars() {
 
 	if err != nil {
 		fmt.Printf(".env file not loaded")
-		os.Exit(1)
+		osExit(1)
 	}
 }

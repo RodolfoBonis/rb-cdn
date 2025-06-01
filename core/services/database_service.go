@@ -5,13 +5,17 @@ import (
 	"github.com/RodolfoBonis/rb-cdn/core/config"
 	"github.com/RodolfoBonis/rb-cdn/core/entities"
 	"github.com/RodolfoBonis/rb-cdn/core/errors"
-	"time"
-
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"time"
 )
 
 var Connector *gorm.DB
+
+type DBService struct {
+	config *ConnectorConfig
+	db     *gorm.DB
+}
 
 type ConnectorConfig struct {
 	Host     string
@@ -21,102 +25,116 @@ type ConnectorConfig struct {
 	Password string
 }
 
+func NewDBService() *DBService {
+	return &DBService{
+		config: buildConnectorConfig(),
+	}
+}
+
 func buildConnectorConfig() *ConnectorConfig {
-	connectorConfig := ConnectorConfig{
+	return &ConnectorConfig{
 		Host:     config.EnvDBHost(),
 		Port:     config.EnvDBPort(),
 		User:     config.EnvDBUser(),
 		Password: config.EnvDBPassword(),
 		DBName:   config.EnvDBName(),
 	}
-	return &connectorConfig
 }
 
-func connectorURL(connectorConfig *ConnectorConfig) string {
+func (s *DBService) getConnectionURL() string {
 	return fmt.Sprintf(
 		"host=%s port=%s user=%s dbname=%s password=%s sslmode=disable",
-		connectorConfig.Host,
-		connectorConfig.Port,
-		connectorConfig.User,
-		connectorConfig.DBName,
-		connectorConfig.Password,
+		s.config.Host,
+		s.config.Port,
+		s.config.User,
+		s.config.DBName,
+		s.config.Password,
 	)
 }
 
 func OpenConnection() *errors.AppError {
-	dbConfig := connectorURL(buildConnectorConfig())
-
-	db, err := gorm.Open("postgres",
-		dbConfig,
-	)
-
-	if err != nil {
-		return errors.DatabaseError(err.Error())
+	service := NewDBService()
+	if err := service.connect(); err != nil {
+		return err
 	}
 
-	environment := config.EnvironmentConfig()
-
-	isProduction := environment == entities.Environment.Production
-	db.SingularTable(true)
-	db.LogMode(!isProduction)
-	db.DB().SetConnMaxLifetime(10 * time.Second)
-	db.DB().SetMaxIdleConns(30)
-	Connector = db
-
-	go func(dbConfig string) {
-		var intervals = []time.Duration{3 * time.Second, 3 * time.Second, 15 * time.Second, 30 * time.Second, 60 * time.Second}
-		for {
-			time.Sleep(60 * time.Second)
-			if e := Connector.DB().Ping(); e != nil {
-			L:
-				for i := 0; i < len(intervals); i++ {
-					e2 := RetryHandler(3, func() (bool, error) {
-						var e error
-						Connector, e = gorm.Open("postgres", dbConfig)
-						if e != nil {
-							return false, e
-						}
-						return true, nil
-					})
-					if e2 != nil {
-						fmt.Println(e.Error())
-						time.Sleep(intervals[i])
-						if i == len(intervals)-1 {
-							i--
-						}
-						continue
-					}
-					break L
-				}
-
-			}
-		}
-	}(dbConfig)
+	service.configureConnection()
+	go service.startHealthCheck()
 
 	return nil
 }
 
-func RetryHandler(n int, f func() (bool, error)) error {
-	ok, er := f()
-	if ok && er == nil {
+func (s *DBService) connect() *errors.AppError {
+	dbURL := s.getConnectionURL()
+	db, err := gorm.Open("postgres", dbURL)
+	if err != nil {
+		return errors.DatabaseError(err.Error())
+	}
+
+	s.db = db
+	Connector = db
+	return nil
+}
+
+func (s *DBService) configureConnection() {
+	s.db.SingularTable(true)
+	s.db.LogMode(!isProduction())
+	s.db.DB().SetConnMaxLifetime(10 * time.Second)
+	s.db.DB().SetMaxIdleConns(30)
+}
+
+func isProduction() bool {
+	return config.EnvironmentConfig() == entities.Environment.Production
+}
+
+func (s *DBService) startHealthCheck() {
+	intervals := []time.Duration{3, 3, 15, 30, 60}
+	dbURL := s.getConnectionURL()
+
+	for {
+		time.Sleep(60 * time.Second)
+		if err := s.db.DB().Ping(); err != nil {
+			s.handleReconnection(intervals, dbURL)
+		}
+	}
+}
+
+func (s *DBService) handleReconnection(intervals []time.Duration, dbURL string) {
+	for i := 0; i < len(intervals); i++ {
+		if success := s.attemptReconnect(dbURL); success {
+			return
+		}
+		time.Sleep(intervals[i] * time.Second)
+		if i == len(intervals)-1 {
+			i--
+		}
+	}
+}
+
+func (s *DBService) attemptReconnect(dbURL string) bool {
+	err := RetryHandler(3, func() (bool, error) {
+		db, err := gorm.Open("postgres", dbURL)
+		if err != nil {
+			return false, err
+		}
+		s.db = db
+		Connector = db
+		return true, nil
+	})
+	return err == nil
+}
+
+func RetryHandler(attempts int, fn func() (bool, error)) error {
+	ok, err := fn()
+	if ok && err == nil {
 		return nil
 	}
-	if n-1 > 0 {
-		return RetryHandler(n-1, f)
+	if attempts > 1 {
+		return RetryHandler(attempts-1, fn)
 	}
-	return er
+	return err
 }
 
 func RunMigrations() {
-	/*
-		Define the Migrations here
-
-		Example:
-			Connector.AutoMigrate(
-				&dtos.Products{},
-				&dtos.Clients{},
-				&dtos.Orders{},
-			)
-	*/
-
+	// Define migrations here
 }

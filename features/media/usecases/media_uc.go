@@ -17,6 +17,24 @@ func NewMediaHandler(minioService services.IMinioService) *MediaHandler {
 	return &MediaHandler{minioService: minioService}
 }
 
+// Media godoc
+// @Summary Get media from CDN
+// @Description Retrieves media files from the CDN, supporting images and videos
+// @Tags Media
+// @Accept json
+// @Produce octet-stream
+// @Produce image/jpeg
+// @Produce image/png
+// @Param bucket path string true "Bucket name"
+// @Param objectPath path string true "Path to the object in the bucket"
+// @Param X-API-KEY header string true "API Key for authentication"
+// @Success 200 {file} binary "Media file"
+// @Success 307 {object} errors.HttpError
+// @Failure 400 {object} errors.HttpError
+// @Failure 401 {object} errors.HttpError
+// @Failure 204 {object} errors.HttpError
+// @Failure 500 {object} errors.HttpError
+// @Router /cdn/{bucket}/{objectPath} [get]
 func (uc *MediaHandler) Media(c *gin.Context) {
 	objectName := c.Param("objectPath")[1:]
 	bucket := c.Param("bucket")

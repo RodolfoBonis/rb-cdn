@@ -3,6 +3,13 @@ kind: API
 metadata:
   name: rb-cdn
   description: This is a service for upload any media file to MINIO
+  links:
+    - url: https://rb-cdn.rodolfodebonis.com.br/v1/docs/index.html
+      title: Documentation
+      icon: article
+    - url: https://sonar.rodolfodebonis.com.br/dashboard?id=RodolfoBonis_rb-cdn_AZTkLM-bJxoExhuNUdcE
+      title: Sonar
+      icon: analytics
   annotations:
       backstage.io/techdocs-ref: dir:.
       github.com/project-slug: RodolfoBonis/rb-cdn

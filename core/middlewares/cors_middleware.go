@@ -7,12 +7,13 @@ import (
 )
 
 func Cors() gin.HandlerFunc {
-	return cors.New(cors.Config{
+	config := cors.Config{
 		AllowOrigins:     []string{"*"},
-		AllowMethods:     []string{"POST, OPTIONS, GET, PUT", "DELETE"},
-		AllowHeaders:     []string{"Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With"},
+		AllowMethods:     []string{"POST", "OPTIONS", "GET", "PUT", "DELETE"},
+		AllowHeaders:     []string{"Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization", "accept", "origin", "Cache-Control", "X-Requested-With", "X-Api-Key"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
-	})
+	}
+	return cors.New(config)
 }
