@@ -1,4 +1,4 @@
-# RB Lab CDN
+# RB CDN
 
 Um serviço robusto de CDN (Content Delivery Network) desenvolvido em Go para gerenciamento e distribuição de arquivos de mídia.
 
