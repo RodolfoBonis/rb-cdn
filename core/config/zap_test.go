@@ -1,51 +1,25 @@
 package config
 
 import (
-	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 	"testing"
 )
 
-// Mock New Relic application for testing
-type mockNewRelicApp struct {
-	*newrelic.Application
-}
-
 func TestZapConfig(t *testing.T) {
 	tests := []struct {
-		name    string
-		app     *newrelic.Application
-		wantErr bool
+		name string
 	}{
 		{
-			name:    "successful initialization",
-			app:     &newrelic.Application{},
-			wantErr: false,
-		},
-		{
-			name:    "nil application",
-			app:     nil,
-			wantErr: true,
+			name: "successful initialization",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			defer func() {
-				if r := recover(); r != nil {
-					if !tt.wantErr {
-						t.Errorf("ZapConfig() panic = %v, wantErr %v", r, tt.wantErr)
-					}
-				}
-			}()
-
-			logger := ZapConfig(tt.app)
-
-			if !tt.wantErr {
-				assert.NotNil(t, logger)
-				assert.IsType(t, &zap.Logger{}, logger)
-			}
+			logger := ZapConfig()
+			assert.NotNil(t, logger)
+			assert.IsType(t, &zap.Logger{}, logger)
 		})
 	}
 }

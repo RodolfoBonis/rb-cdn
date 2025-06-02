@@ -30,11 +30,11 @@ func main() {
 
 	config.SentryConfig()
 
-	newRelicConfig := config.NewRelicConfig()
+	//newRelicConfig := config.NewRelicConfig()
 
-	middleware := middlewares.NewMonitoringMiddleware(newRelicConfig, *logger.Log)
+	middleware := middlewares.NewMonitoringMiddleware(*logger.Log)
 
-	app.Use(middleware.NewRelicMiddleware())
+	//app.Use(middleware.NewRelicMiddleware())
 	app.Use(middleware.SentryMiddleware())
 	app.Use(middleware.LogMiddleware)
 
@@ -66,6 +66,8 @@ func main() {
 		logger.Log.Error(appError.Message, appError.ToMap())
 		panic(err)
 	}
+
+	logger.Log.Info("Server started successfully", map[string]interface{}{})
 
 }
 

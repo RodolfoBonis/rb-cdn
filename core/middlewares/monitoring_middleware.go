@@ -5,29 +5,21 @@ import (
 	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/newrelic/go-agent/v3/integrations/nrgin"
-	"github.com/newrelic/go-agent/v3/newrelic"
 	"net/http"
 )
 
 type MonitoringMiddleware struct {
-	newRelicConfig *newrelic.Application
-	logger         logger.CustomLogger
+	logger logger.CustomLogger
 }
 
-func NewMonitoringMiddleware(app *newrelic.Application, logger logger.CustomLogger) *MonitoringMiddleware {
+func NewMonitoringMiddleware(logger logger.CustomLogger) *MonitoringMiddleware {
 	return &MonitoringMiddleware{
-		newRelicConfig: app,
-		logger:         logger,
+		logger: logger,
 	}
 }
 
 func (m *MonitoringMiddleware) SentryMiddleware() gin.HandlerFunc {
 	return sentrygin.New(sentrygin.Options{Repanic: true})
-}
-
-func (m *MonitoringMiddleware) NewRelicMiddleware() gin.HandlerFunc {
-	return nrgin.Middleware(m.newRelicConfig)
 }
 
 func (m *MonitoringMiddleware) LogMiddleware(ctx *gin.Context) {
