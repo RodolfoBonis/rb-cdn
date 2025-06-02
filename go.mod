@@ -3,7 +3,7 @@ module github.com/RodolfoBonis/rb-cdn
 go 1.20
 
 require (
-	github.com/RodolfoBonis/go_key_guardian v0.0.0-20240425052743-0b7b38b78a36
+	github.com/RodolfoBonis/go_key_guardian v0.0.0-20250602011612-c6d049dbc560
 	github.com/getsentry/sentry-go v0.27.0
 	github.com/gin-contrib/cors v1.7.2
 	github.com/gin-gonic/gin v1.9.1
