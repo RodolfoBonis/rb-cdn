@@ -22,13 +22,6 @@ func EnvPort() string {
 	return GetEnv("PORT", "8000")
 }
 
-func EnvNewRelic() entities.NewRelicEnv {
-	return entities.NewRelicEnv{
-		AppName: EnvServiceName(),
-		License: GetEnv("NEW_RELIC_LICENSE_KEY", ""),
-	}
-}
-
 func EnvServiceId() string {
 	return GetEnv("SERVICE_ID", "")
 }

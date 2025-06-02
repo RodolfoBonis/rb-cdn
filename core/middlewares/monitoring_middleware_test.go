@@ -8,7 +8,6 @@ import (
 
 	"github.com/RodolfoBonis/rb-cdn/core/logger"
 	"github.com/gin-gonic/gin"
-	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -39,26 +38,15 @@ func setupMockLogger() *MockLogger {
 // Testa a criação do MonitoringMiddleware
 func TestNewMonitoringMiddleware(t *testing.T) {
 	mockLogger := setupMockLogger()
-	app, _ := newrelic.NewApplication(newrelic.ConfigAppName("TestApp"))
-	middleware := NewMonitoringMiddleware(app, mockLogger.CustomLogger)
+	middleware := NewMonitoringMiddleware(mockLogger.CustomLogger)
 	assert.NotNil(t, middleware)
-	assert.Equal(t, app, middleware.newRelicConfig)
 }
 
 // Testa a inicialização do middleware Sentry
 func TestSentryMiddleware(t *testing.T) {
 	mockLogger := setupMockLogger()
-	middleware := NewMonitoringMiddleware(nil, mockLogger.CustomLogger)
+	middleware := NewMonitoringMiddleware(mockLogger.CustomLogger)
 	handler := middleware.SentryMiddleware()
-	assert.NotNil(t, handler)
-}
-
-// Testa a inicialização do middleware New Relic
-func TestNewRelicMiddleware(t *testing.T) {
-	mockLogger := setupMockLogger()
-	app, _ := newrelic.NewApplication(newrelic.ConfigAppName("TestApp"))
-	middleware := NewMonitoringMiddleware(app, mockLogger.CustomLogger)
-	handler := middleware.NewRelicMiddleware()
 	assert.NotNil(t, handler)
 }
 
@@ -103,7 +91,7 @@ func TestLogMiddleware_SentryRequestId(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
 	mockLogger := setupMockLogger()
-	middleware := NewMonitoringMiddleware(nil, mockLogger.CustomLogger)
+	middleware := NewMonitoringMiddleware(mockLogger.CustomLogger)
 	r.Use(middleware.LogMiddleware)
 
 	r.GET("/sentry", func(c *gin.Context) {

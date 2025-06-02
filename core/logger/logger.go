@@ -35,10 +35,8 @@ func InitLogger() {
 		return
 	}
 
-	newRelicConfig := config.NewRelicConfig()
-
 	Log = &CustomLogger{
-		logger: config.ZapConfig(newRelicConfig),
+		logger: config.ZapConfig(),
 	}
 }
 

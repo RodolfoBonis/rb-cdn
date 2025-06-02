@@ -3,7 +3,7 @@ module github.com/RodolfoBonis/rb-cdn
 go 1.20
 
 require (
-	github.com/RodolfoBonis/go_key_guardian v0.0.0-20250602011612-c6d049dbc560
+	github.com/RodolfoBonis/go_key_guardian v0.0.0-20250602021721-a39544abea03
 	github.com/getsentry/sentry-go v0.27.0
 	github.com/gin-contrib/cors v1.7.2
 	github.com/gin-gonic/gin v1.9.1
@@ -13,7 +13,6 @@ require (
 	github.com/minio/minio-go v6.0.14+incompatible
 	github.com/newrelic/go-agent/v3 v3.32.0
 	github.com/newrelic/go-agent/v3/integrations/logcontext-v2/nrzap v1.1.0
-	github.com/newrelic/go-agent/v3/integrations/nrgin v1.3.0
 	github.com/prometheus/client_golang v1.19.0
 	github.com/rabbitmq/amqp091-go v1.8.1
 	github.com/stretchr/testify v1.10.0

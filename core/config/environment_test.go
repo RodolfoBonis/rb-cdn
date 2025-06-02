@@ -72,12 +72,6 @@ func TestEnvironmentFunctions(t *testing.T) {
 		})
 	}
 
-	t.Run("EnvNewRelic", func(t *testing.T) {
-		newRelic := EnvNewRelic()
-		assert.Equal(t, "test-service", newRelic.AppName)
-		assert.Equal(t, "test-license", newRelic.License)
-	})
-
 	t.Run("EnvAmqpConnection", func(t *testing.T) {
 		expected := "amqp://test-user:test-password@test-host:5672/"
 		assert.Equal(t, expected, EnvAmqpConnection())
@@ -110,10 +104,6 @@ func TestDefaultValues(t *testing.T) {
 	assert.Equal(t, "", EnvDBName())
 	assert.Equal(t, "API", EnvServiceName())
 	assert.Equal(t, "amqp://guest:guest@localhost:5672/", EnvAmqpConnection())
-
-	newRelic := EnvNewRelic()
-	assert.Equal(t, "API", newRelic.AppName)
-	assert.Equal(t, "", newRelic.License)
 }
 
 func TestLoadEnvVars(t *testing.T) {

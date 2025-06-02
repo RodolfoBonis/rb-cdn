@@ -51,10 +51,8 @@ func setupTestServer(t *testing.T, port string) *gin.Engine {
 }
 
 func setupTestMiddleware(app *gin.Engine) {
-	newRelicConfig := config.NewRelicConfig()
-	middleware := middlewares.NewMonitoringMiddleware(newRelicConfig, logger.CustomLogger{})
+	middleware := middlewares.NewMonitoringMiddleware(logger.CustomLogger{})
 
-	app.Use(middleware.NewRelicMiddleware())
 	app.Use(middleware.LogMiddleware)
 	app.Use(gin.Logger())
 	app.Use(gin.Recovery())
