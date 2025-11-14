@@ -7,6 +7,7 @@ import (
 	"github.com/RodolfoBonis/rb-cdn/core/errors"
 	"github.com/minio/minio-go"
 	"net/url"
+	"strings"
 	"time"
 )
 
@@ -33,8 +34,20 @@ func NewMinioService() IMinioService {
 }
 
 func (service *MinioService) startMinioService() (*minio.Client, *errors.AppError) {
+	// Parse the host to extract hostname and determine if it uses SSL
+	minioHost := service.host
+	useSSL := true
 
-	client, err := minio.New(service.host, service.accessId, service.secretKey, true)
+	// Check if the host starts with http:// or https://
+	if strings.HasPrefix(minioHost, "http://") {
+		minioHost = strings.TrimPrefix(minioHost, "http://")
+		useSSL = false
+	} else if strings.HasPrefix(minioHost, "https://") {
+		minioHost = strings.TrimPrefix(minioHost, "https://")
+		useSSL = true
+	}
+
+	client, err := minio.New(minioHost, service.accessId, service.secretKey, useSSL)
 
 	if err != nil {
 		return nil, errors.ServiceError(err.Error())
