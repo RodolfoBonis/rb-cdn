@@ -9,6 +9,8 @@ github.com/RodolfoBonis/go_key_guardian v0.0.0-20250602021721-a39544abea03 h1:Z0
 github.com/RodolfoBonis/go_key_guardian v0.0.0-20250602021721-a39544abea03/go.mod h1:Q4ZimpEEsrPWZR6J196hBZYAwUjE3FBLAxEPkmXYDnc=
 github.com/RodolfoBonis/go_key_guardian v0.0.0-20250721094515-df32fddfe996 h1:prKTBYbcGpKldnvUk3YddNqhlyX2UQQRWysH6Aizm1A=
 github.com/RodolfoBonis/go_key_guardian v0.0.0-20250721094515-df32fddfe996/go.mod h1:Q4ZimpEEsrPWZR6J196hBZYAwUjE3FBLAxEPkmXYDnc=
+github.com/RodolfoBonis/go_key_guardian v0.0.0-20251114061817-c89a29d4b7d4 h1:Np56otF4XvSRzqVzXPZ13uUCAAKXTumIWVvx1yDZMVQ=
+github.com/RodolfoBonis/go_key_guardian v0.0.0-20251114061817-c89a29d4b7d4/go.mod h1:Q4ZimpEEsrPWZR6J196hBZYAwUjE3FBLAxEPkmXYDnc=
 github.com/andybalholm/cascadia v1.1.0/go.mod h1:GsXiBklL0woXo1j/WYWtSYYC4ouU9PqHO0sqidkEA4Y=
 github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
 github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=

@@ -1,13 +1,14 @@
 package middlewares
 
 import (
+	"net/http"
+	"sync"
+
 	keyGuardian "github.com/RodolfoBonis/go_key_guardian"
 	"github.com/RodolfoBonis/rb-cdn/core/config"
 	"github.com/RodolfoBonis/rb-cdn/core/errors"
 	"github.com/RodolfoBonis/rb-cdn/core/logger"
 	"github.com/gin-gonic/gin"
-	"net/http"
-	"sync"
 )
 
 var (
