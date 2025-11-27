@@ -7,6 +7,8 @@ github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 h1:d+Bc7a5rLufV
 github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578/go.mod h1:uGdkoq3SwY9Y+13GIhn11/XLaGBb4BfwItxLd5jeuXE=
 github.com/RodolfoBonis/go_key_guardian v0.0.0-20251114063442-43298d362591 h1:PZ4KoS5TgfCL4mr4Z7L8eBvn/liEh/vcVeLw2M371zc=
 github.com/RodolfoBonis/go_key_guardian v0.0.0-20251114063442-43298d362591/go.mod h1:Q4ZimpEEsrPWZR6J196hBZYAwUjE3FBLAxEPkmXYDnc=
+github.com/RodolfoBonis/rb_auth_client v0.1.0 h1:PZs8Aq7i894FIoiryH9MnZyxDUnwM0u/4w5AGaSPIRQ=
+github.com/RodolfoBonis/rb_auth_client v0.1.0/go.mod h1:r16vwjOEBXfepFTSNl1gIvlZG4IMfyG1h4wU8vsArbw=
 github.com/andybalholm/cascadia v1.1.0/go.mod h1:GsXiBklL0woXo1j/WYWtSYYC4ouU9PqHO0sqidkEA4Y=
 github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
 github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=
