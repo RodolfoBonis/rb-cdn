@@ -2,7 +2,7 @@ package usecases
 
 import (
 	"fmt"
-	keyGuardian "github.com/RodolfoBonis/go_key_guardian"
+	rbauth "github.com/RodolfoBonis/rb_auth_client"
 	coreEntities "github.com/RodolfoBonis/rb-cdn/core/entities"
 	"github.com/RodolfoBonis/rb-cdn/core/logger"
 	"github.com/RodolfoBonis/rb-cdn/core/services"
@@ -29,8 +29,9 @@ func NewUploadHandler(minioService services.IMinioService, log *logger.CustomLog
 // @Accept multipart/form-data
 // @Produce json
 // @Param file formData file true "File to upload"
+// @Param bucket formData string true "Bucket name"
 // @Param folder formData string false "Folder name (optional)"
-// @Param X-API-KEY header string true "API Key for authentication"
+// @Param Authorization header string true "Bearer token"
 // @Success 200 {object} entities.UploadResponseEntity
 // @Failure 400 {object} errors.HttpError
 // @Failure 401 {object} errors.HttpError
@@ -38,6 +39,32 @@ func NewUploadHandler(minioService services.IMinioService, log *logger.CustomLog
 // @Failure 500 {object} errors.HttpError
 // @Router /upload [post]
 func (uc *UploadHandler) Upload(c *gin.Context) {
+	// Get validation from context
+	validation := rbauth.GetValidation(c)
+	if validation == nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Authentication required",
+		})
+		return
+	}
+
+	// Get bucket from form
+	bucketName := c.PostForm("bucket")
+	if bucketName == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "bucket parameter is required",
+		})
+		return
+	}
+
+	// Check write permissions for the bucket
+	if !validation.Permissions.HasBucketPermission("rb-cdn", bucketName, "write") {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": fmt.Sprintf("No write permission for bucket: %s", bucketName),
+		})
+		return
+	}
+
 	file, header, err := c.Request.FormFile("file")
 	folderName := c.Request.FormValue("folder")
 	if err != nil {
@@ -69,16 +96,8 @@ func (uc *UploadHandler) Upload(c *gin.Context) {
 		Size: fileSize,
 	}
 
-	data, exists := c.Get("configs")
-	if !exists {
-		c.String(http.StatusInternalServerError, "Erro ao obter as configurações")
-		return
-	}
-
-	apiKeyData := data.(keyGuardian.ApiKeyData)
-
-	uc.log.Info(fmt.Sprintf("Sending %s to Bucket: %s", objectName, apiKeyData.Bucket))
-	filePath, appErr := uc.minioService.UploadObject(apiKeyData.Bucket, fileEntity, minio.PutObjectOptions{ContentType: contentType})
+	uc.log.Info(fmt.Sprintf("Sending %s to Bucket: %s", objectName, bucketName))
+	filePath, appErr := uc.minioService.UploadObject(bucketName, fileEntity, minio.PutObjectOptions{ContentType: contentType})
 	if appErr != nil {
 		c.JSON(http.StatusInternalServerError, appErr)
 		return

@@ -1,9 +1,10 @@
 module github.com/RodolfoBonis/rb-cdn
 
-go 1.20
+go 1.24.5
 
 require (
 	github.com/RodolfoBonis/go_key_guardian v0.0.0-20251114063442-43298d362591
+	github.com/RodolfoBonis/rb_auth_client v0.0.0
 	github.com/getsentry/sentry-go v0.27.0
 	github.com/gin-contrib/cors v1.7.2
 	github.com/gin-gonic/gin v1.9.1
@@ -72,3 +73,5 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/RodolfoBonis/rb_auth_client => /Users/rodolfodebonis/Documents/projects/rb_auth_client

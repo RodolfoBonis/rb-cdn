@@ -1,6 +1,7 @@
 package routes
 
 import (
+	rbauth "github.com/RodolfoBonis/rb_auth_client"
 	"github.com/RodolfoBonis/rb-cdn/core/health"
 	mediaRoutes "github.com/RodolfoBonis/rb-cdn/features/media/routes"
 	streamRoutes "github.com/RodolfoBonis/rb-cdn/features/stream/routes"
@@ -12,7 +13,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-func InitializeRoutes(router *gin.Engine) {
+func InitializeRoutes(router *gin.Engine, authClient *rbauth.Client) {
 
 	root := router.Group("/v1")
 
@@ -20,7 +21,7 @@ func InitializeRoutes(router *gin.Engine) {
 	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	health.InjectRoute(root)
-	uploadRoutes.InjectRoutes(root)
-	streamRoutes.InjectRoutes(root)
-	mediaRoutes.InjectRoutes(root)
+	uploadRoutes.InjectRoutes(root, authClient)
+	streamRoutes.InjectRoutes(root, authClient)
+	mediaRoutes.InjectRoutes(root, authClient)
 }

@@ -2,7 +2,7 @@ package usecases
 
 import (
 	"fmt"
-	keyGuardian "github.com/RodolfoBonis/go_key_guardian"
+	rbauth "github.com/RodolfoBonis/rb_auth_client"
 	"github.com/RodolfoBonis/rb-cdn/core/errors"
 	"github.com/RodolfoBonis/rb-cdn/core/logger"
 	"github.com/RodolfoBonis/rb-cdn/core/services"
@@ -31,7 +31,7 @@ func NewStreamHandler(minioService services.IMinioService, logger *logger.Custom
 // @Produce video/mp4
 // @Param objectPath path string true "Object path in the bucket"
 // @Param Range header string false "Range header for partial content requests"
-// @Param X-API-KEY header string true "API Key for authentication"
+// @Param Authorization header string true "Bearer token"
 // @Success 200 {file} binary "Full video content"
 // @Success 206 {file} binary "Partial video content"
 // @Failure 400 {object} errors.HttpError
@@ -40,14 +40,56 @@ func NewStreamHandler(minioService services.IMinioService, logger *logger.Custom
 // @Failure 500 {object} errors.HttpError
 // @Router /stream/{objectPath} [get]
 func (vc *StreamHandler) StreamVideo(c *gin.Context) {
-	objectName := c.Param("objectPath")[1:]
-
-	apiKeyData, err := vc.getApiKeyData(c)
-	if err != nil {
+	// Get validation from context
+	validation := rbauth.GetValidation(c)
+	if validation == nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Authentication required",
+		})
 		return
 	}
 
-	obj, appErr := vc.getMinioObject(c, apiKeyData.Bucket, objectName)
+	objectName := c.Param("objectPath")[1:]
+
+	// Extract bucket from object path (assuming format: bucket/path/to/file)
+	// For stream, we need to determine which bucket to use
+	// We'll check all buckets the user has read access to
+	var bucketName string
+	for service, buckets := range validation.Permissions {
+		if service == "rb-cdn" {
+			for bucket, permissions := range buckets {
+				for _, perm := range permissions {
+					if perm == "read" {
+						bucketName = bucket
+						break
+					}
+				}
+				if bucketName != "" {
+					break
+				}
+			}
+		}
+		if bucketName != "" {
+			break
+		}
+	}
+
+	if bucketName == "" {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "No read permission for any bucket",
+		})
+		return
+	}
+
+	// Check read permissions
+	if !validation.Permissions.HasBucketPermission("rb-cdn", bucketName, "read") {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": fmt.Sprintf("No read permission for bucket: %s", bucketName),
+		})
+		return
+	}
+
+	obj, appErr := vc.getMinioObject(c, bucketName, objectName)
 	if appErr != nil {
 		return
 	}
@@ -68,15 +110,6 @@ func (vc *StreamHandler) StreamVideo(c *gin.Context) {
 	}
 
 	vc.handleRangeRequest(c, obj, rangeHeader, contentLength)
-}
-
-func (vc *StreamHandler) getApiKeyData(c *gin.Context) (keyGuardian.ApiKeyData, error) {
-	data, exists := c.Get("configs")
-	if !exists {
-		c.String(http.StatusInternalServerError, "Erro ao obter as configurações")
-		return keyGuardian.ApiKeyData{}, fmt.Errorf("config not found")
-	}
-	return data.(keyGuardian.ApiKeyData), nil
 }
 
 func (vc *StreamHandler) getMinioObject(c *gin.Context, bucket, objectName string) (*minio.Object, *errors.AppError) {

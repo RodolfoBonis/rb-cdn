@@ -90,6 +90,27 @@ func EnvAmqpConnection() string {
 	return fmt.Sprintf("amqp://%s:%s@%s/", user, password, host)
 }
 
+// RB Auth Client configuration
+func EnvManagementAPIURL() string {
+	return GetEnv("MANAGEMENT_API_URL", "http://rb-management-api-svc.rb-management-api.svc.cluster.local:8000")
+}
+
+func EnvRBCDNClientID() string {
+	return GetEnv("RB_CDN_CLIENT_ID", "rb-cdn-service-account")
+}
+
+func EnvRBCDNClientSecret() string {
+	return GetEnv("RB_CDN_CLIENT_SECRET", "")
+}
+
+func EnvKeycloakHost() string {
+	return GetEnv("KEYCLOAK_HOST", "http://auth-svc.auth.svc.cluster.local:8080")
+}
+
+func EnvKeycloakRealm() string {
+	return GetEnv("KEYCLOAK_REALM", "master")
+}
+
 var osExit = os.Exit
 
 func LoadEnvVars() {

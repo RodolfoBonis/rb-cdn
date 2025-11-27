@@ -1,7 +1,8 @@
 package usecases
 
 import (
-	keyGuardian "github.com/RodolfoBonis/go_key_guardian"
+	"fmt"
+	rbauth "github.com/RodolfoBonis/rb_auth_client"
 	"github.com/RodolfoBonis/rb-cdn/core/services"
 	"github.com/gin-gonic/gin"
 	"github.com/minio/minio-go"
@@ -28,15 +29,25 @@ func NewMediaHandler(minioService services.IMinioService) *MediaHandler {
 // @Produce image/png
 // @Param bucket path string true "Bucket name"
 // @Param objectPath path string true "Path to the object in the bucket"
-// @Param X-API-KEY header string true "API Key for authentication"
+// @Param Authorization header string true "Bearer token"
 // @Success 200 {file} binary "Media file"
 // @Success 307 {object} errors.HttpError
 // @Failure 400 {object} errors.HttpError
 // @Failure 401 {object} errors.HttpError
+// @Failure 403 {object} errors.HttpError
 // @Failure 204 {object} errors.HttpError
 // @Failure 500 {object} errors.HttpError
 // @Router /cdn/{bucket}/{objectPath} [get]
 func (uc *MediaHandler) Media(c *gin.Context) {
+	// Get validation from context
+	validation := rbauth.GetValidation(c)
+	if validation == nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Authentication required",
+		})
+		return
+	}
+
 	objectName := c.Param("objectPath")[1:]
 	bucket := c.Param("bucket")
 
@@ -45,16 +56,11 @@ func (uc *MediaHandler) Media(c *gin.Context) {
 		return
 	}
 
-	data, exists := c.Get("configs")
-	if !exists {
-		c.String(http.StatusInternalServerError, "Erro ao obter as configurações")
-		return
-	}
-
-	apiKeyData := data.(keyGuardian.ApiKeyData)
-	
-	if apiKeyData.Bucket != bucket {
-		c.String(http.StatusUnauthorized, "Unauthorized")
+	// Check read permissions for the bucket
+	if !validation.Permissions.HasBucketPermission("rb-cdn", bucket, "read") {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": fmt.Sprintf("No read permission for bucket: %s", bucket),
+		})
 		return
 	}
 

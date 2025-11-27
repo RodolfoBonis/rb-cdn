@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	rbauth "github.com/RodolfoBonis/rb_auth_client"
 	"github.com/RodolfoBonis/rb-cdn/core/config"
 	"github.com/RodolfoBonis/rb-cdn/core/entities"
 	"github.com/RodolfoBonis/rb-cdn/core/errors"
@@ -16,6 +17,8 @@ import (
 	"strings"
 	"time"
 )
+
+var authClient *rbauth.Client
 
 func main() {
 	app := gin.New()
@@ -49,7 +52,7 @@ func main() {
 		AllowCredentials: true,
 	}))
 
-	routes.InitializeRoutes(app)
+	routes.InitializeRoutes(app, authClient)
 
 	runPort := fmt.Sprintf(":%s", config.EnvPort())
 
@@ -79,6 +82,19 @@ func initializeApp() {
 	config.LoadEnvVars()
 	logger.InitLogger()
 
+	// Initialize auth client
+	authClient = rbauth.NewClient(rbauth.Config{
+		ManagementAPIURL: config.EnvManagementAPIURL(),
+		ClientID:         config.EnvRBCDNClientID(),
+		ClientSecret:     config.EnvRBCDNClientSecret(),
+		KeycloakURL:      config.EnvKeycloakHost(),
+		Realm:            config.EnvKeycloakRealm(),
+		CacheTTL:         5 * time.Minute,
+		EnableLogging:    true,
+	})
+
+	logger.Log.Info("Auth client initialized", map[string]interface{}{})
+
 	versionFileName := "version.txt"
 	if config.EnvironmentConfig() == entities.Environment.Production {
 		versionFileName = "/version.txt"
@@ -95,4 +111,9 @@ func initializeApp() {
 	docs.SwaggerInfo.Host = "rb-cdn.rodolfodebonis.com.br"
 	docs.SwaggerInfo.BasePath = "/v1"
 	docs.SwaggerInfo.Schemes = []string{"https"}
+}
+
+// GetAuthClient returns the global auth client instance
+func GetAuthClient() *rbauth.Client {
+	return authClient
 }
