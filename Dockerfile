@@ -1,4 +1,4 @@
-FROM golang:1.22.1-alpine as build-env
+FROM golang:1.24.5-alpine as build-env
 
 RUN apk add --no-cache git ca-certificates
 
@@ -22,7 +22,7 @@ ADD . /go/src/github.com/RodolfoBonis/rb-cdn/
 COPY . ./
 
 
-FROM golang:1.22.1 as builder
+FROM golang:1.24.5 as builder
 
 ARG GITHUB_TOKEN
 ARG VERSION=unknown
@@ -38,7 +38,7 @@ RUN /swag init
 
 RUN git config --global url."https://${TOKEN}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
 
-RUN go env -w GOPRIVATE=github.com/RodolfoBonis/go_key_guardian
+RUN go env -w GOPRIVATE=github.com/RodolfoBonis/go_key_guardian,github.com/RodolfoBonis/rb_auth_client
 
 RUN go get github.com/RodolfoBonis/go_key_guardian
 
