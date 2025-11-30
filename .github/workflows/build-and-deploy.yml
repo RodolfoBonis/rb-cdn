@@ -44,11 +44,11 @@ jobs:
           VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.6.0")
           COMMIT_SHA=$(git rev-parse --short HEAD)
           VERSION=$(echo $VERSION | sed 's/^v//')
-          FULL_VERSION="${{VERSION}}-${{COMMIT_SHA}}"
-          
-          echo "version=${{VERSION}}" >> $GITHUB_OUTPUT
-          echo "full_version=${{FULL_VERSION}}" >> $GITHUB_OUTPUT
-          echo "commit_sha=${{COMMIT_SHA}}" >> $GITHUB_OUTPUT
+          FULL_VERSION="${VERSION}-${COMMIT_SHA}"
+
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "full_version=${FULL_VERSION}" >> $GITHUB_OUTPUT
+          echo "commit_sha=${COMMIT_SHA}" >> $GITHUB_OUTPUT
 
       - name: Build and push Docker image
         env:
@@ -57,8 +57,16 @@ jobs:
           IMAGE_TAG_FULL: ${{ steps.version.outputs.full_version }}
           IMAGE_TAG_COMMIT: ${{ steps.version.outputs.commit_sha }}
         run: |
-          docker buildx build             --ssh default             --platform linux/amd64             --push             --tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_VERSION             --tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_FULL             --tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_COMMIT             --tag $ECR_REGISTRY/$ECR_REPOSITORY:latest             .
-          
+          docker buildx build \
+            --ssh default \
+            --platform linux/amd64 \
+            --push \
+            --tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_VERSION \
+            --tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_FULL \
+            --tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_COMMIT \
+            --tag $ECR_REGISTRY/$ECR_REPOSITORY:latest \
+            .
+
           echo "Image pushed with tags:"
           echo "  - $IMAGE_TAG_VERSION"
           echo "  - $IMAGE_TAG_FULL"
