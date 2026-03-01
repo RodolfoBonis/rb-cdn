@@ -10,5 +10,5 @@ func InjectRoutes(route *gin.RouterGroup, authClient *rbauth.Client) {
 	var uc = di.StreamInjection()
 
 	streamRoute := route.Group("/stream")
-	streamRoute.GET("/*objectPath", authClient.RequireAuth(), uc.StreamVideo)
+	streamRoute.GET("/*objectPath", authClient.RequireAuth(), authClient.RequireService("rb-cdn"), uc.StreamVideo)
 }

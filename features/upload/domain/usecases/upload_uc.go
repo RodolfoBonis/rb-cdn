@@ -48,6 +48,13 @@ func (uc *UploadHandler) Upload(c *gin.Context) {
 		return
 	}
 
+	if !validation.Permissions.HasService("rb-cdn") {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "No access to service: rb-cdn",
+		})
+		return
+	}
+
 	// Get bucket from form
 	bucketName := c.PostForm("bucket")
 	if bucketName == "" {

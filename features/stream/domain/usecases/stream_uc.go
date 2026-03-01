@@ -49,6 +49,13 @@ func (vc *StreamHandler) StreamVideo(c *gin.Context) {
 		return
 	}
 
+	if !validation.Permissions.HasService("rb-cdn") {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "No access to service: rb-cdn",
+		})
+		return
+	}
+
 	objectName := c.Param("objectPath")[1:]
 
 	// Extract bucket from object path (assuming format: bucket/path/to/file)
