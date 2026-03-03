@@ -10,5 +10,5 @@ func InjectRoutes(route *gin.RouterGroup, authClient *rbauth.Client) {
 	var uc = di.UploadInjection()
 
 	uploadRoute := route.Group("/upload")
-	uploadRoute.POST("/", authClient.RequireAuth(), authClient.RequireService("rb-cdn"), uc.Upload)
+	uploadRoute.POST("/", authClient.RequireAuth(), authClient.RequireService("rb-cdn"), authClient.RequireServicePermission("rb-cdn", "write"), uc.Upload)
 }

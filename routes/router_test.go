@@ -1,6 +1,7 @@
 package routes
 
 import (
+	rbauth "github.com/RodolfoBonis/rb_auth_client"
 	"github.com/RodolfoBonis/rb-cdn/core/logger"
 	"github.com/RodolfoBonis/rb-cdn/docs"
 	"github.com/gin-gonic/gin"
@@ -9,6 +10,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+	"time"
 )
 
 type testCase struct {
@@ -44,7 +46,17 @@ func setupTestRouter() *gin.Engine {
 	docs.SwaggerInfo.BasePath = "/v1"
 	docs.SwaggerInfo.Schemes = []string{"http", "https"}
 
-	InitializeRoutes(router)
+	authClient := rbauth.NewClient(rbauth.Config{
+		ManagementAPIURL: "http://localhost:8000",
+		ClientID:         "test-client",
+		ClientSecret:     "test-secret",
+		KeycloakURL:      "http://localhost:8080",
+		Realm:            "master",
+		CacheTTL:         time.Minute,
+		EnableLogging:    false,
+	})
+
+	InitializeRoutes(router, authClient)
 	return router
 }
 

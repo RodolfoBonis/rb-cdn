@@ -54,6 +54,12 @@ func (uc *UploadHandler) Upload(c *gin.Context) {
 		})
 		return
 	}
+	if !validation.Permissions.HasServicePermission("rb-cdn", "write") {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "No service-level write permission for rb-cdn",
+		})
+		return
+	}
 
 	// Get bucket from form
 	bucketName := c.PostForm("bucket")

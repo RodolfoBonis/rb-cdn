@@ -54,6 +54,12 @@ func (uc *MediaHandler) Media(c *gin.Context) {
 		})
 		return
 	}
+	if !validation.Permissions.HasServicePermission("rb-cdn", "read") {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "No service-level read permission for rb-cdn",
+		})
+		return
+	}
 
 	objectName := c.Param("objectPath")[1:]
 	bucket := c.Param("bucket")

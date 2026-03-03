@@ -172,7 +172,7 @@ func TestServerConfiguration(t *testing.T) {
 			assert.NotPanics(t, func() {
 				setupTestMiddleware(app)
 				setupCORS(app)
-				routes.InitializeRoutes(app)
+				routes.InitializeRoutes(app, authClient)
 			})
 
 			done := make(chan bool)

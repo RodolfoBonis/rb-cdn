@@ -10,5 +10,5 @@ func InjectRoutes(route *gin.RouterGroup, authClient *rbauth.Client) {
 	var uc = di.MediaInjection()
 
 	mediaRoute := route.Group("/cdn")
-	mediaRoute.GET("/:bucket/*objectPath", authClient.RequireAuth(), authClient.RequireService("rb-cdn"), uc.Media)
+	mediaRoute.GET("/:bucket/*objectPath", authClient.RequireAuth(), authClient.RequireService("rb-cdn"), authClient.RequireServicePermission("rb-cdn", "read"), uc.Media)
 }
