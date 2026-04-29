@@ -4,7 +4,7 @@ go 1.24.5
 
 require (
 	github.com/RodolfoBonis/go_key_guardian v0.0.0-20251114063442-43298d362591
-	github.com/RodolfoBonis/rb_auth_client v0.5.0
+	github.com/RodolfoBonis/rb_auth_client v1.0.2
 	github.com/getsentry/sentry-go v0.27.0
 	github.com/gin-contrib/cors v1.7.2
 	github.com/gin-gonic/gin v1.9.1
@@ -25,6 +25,7 @@ require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
+	github.com/RodolfoBonis/rb_auth_contract/go v0.1.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bytedance/sonic v1.11.6 // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect

@@ -23,6 +23,7 @@ type IMinioService interface {
 	GetObject(bucket string, objectName string, options minio.GetObjectOptions) (*minio.Object, *errors.AppError)
 	GetObjectURL(bucket string, objectName string) (string, *errors.AppError)
 	GetObjectInfo(bucket string, objectName string) (*minio.ObjectInfo, *errors.AppError)
+	ListBuckets() ([]minio.BucketInfo, *errors.AppError)
 }
 
 func NewMinioService() IMinioService {
@@ -129,6 +130,23 @@ func (service *MinioService) GetObjectURL(bucket string, objectName string) (str
 	}
 
 	return presignedURL.String(), nil
+}
+
+// ListBuckets returns every bucket the configured MinIO credentials
+// can see. Used at boot to declare per-bucket capability scopes
+// against the management API. Failure is fatal — the service must
+// not silently sync an empty bucket list when MinIO is up.
+func (service *MinioService) ListBuckets() ([]minio.BucketInfo, *errors.AppError) {
+	client, appErr := service.startMinioService()
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	buckets, err := client.ListBuckets()
+	if err != nil {
+		return nil, errors.ServiceError(err.Error())
+	}
+	return buckets, nil
 }
 
 func (service *MinioService) GetObjectInfo(bucket string, objectName string) (*minio.ObjectInfo, *errors.AppError) {
