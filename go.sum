@@ -7,8 +7,8 @@ github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 h1:d+Bc7a5rLufV
 github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578/go.mod h1:uGdkoq3SwY9Y+13GIhn11/XLaGBb4BfwItxLd5jeuXE=
 github.com/RodolfoBonis/go_key_guardian v0.0.0-20251114063442-43298d362591 h1:PZ4KoS5TgfCL4mr4Z7L8eBvn/liEh/vcVeLw2M371zc=
 github.com/RodolfoBonis/go_key_guardian v0.0.0-20251114063442-43298d362591/go.mod h1:Q4ZimpEEsrPWZR6J196hBZYAwUjE3FBLAxEPkmXYDnc=
-github.com/RodolfoBonis/rb_auth_client v1.0.2 h1:k5PKNk6mCv3lz3y3LyFr0SjPfg8WJCSeDQUTq5rd4CE=
-github.com/RodolfoBonis/rb_auth_client v1.0.2/go.mod h1:F7wEVy1/443Sip0kFyyhIAbIKHlVfQicKVnPpazDQGE=
+github.com/RodolfoBonis/rb_auth_client v1.0.3 h1:8V270NiGCT/CoVvdeu3X9mVftFNlwkSgMz2sjuRCvtM=
+github.com/RodolfoBonis/rb_auth_client v1.0.3/go.mod h1:F7wEVy1/443Sip0kFyyhIAbIKHlVfQicKVnPpazDQGE=
 github.com/RodolfoBonis/rb_auth_contract/go v0.1.0 h1:HCFLO+HxhvOKzUfXAnhd76DCTetfJP7eS+TfTcFWgJs=
 github.com/RodolfoBonis/rb_auth_contract/go v0.1.0/go.mod h1:Wk0XceJSzwSAaEs8XKTcQ33j9SLauaM1YBoFwY+6BL8=
 github.com/andybalholm/cascadia v1.1.0/go.mod h1:GsXiBklL0woXo1j/WYWtSYYC4ouU9PqHO0sqidkEA4Y=
