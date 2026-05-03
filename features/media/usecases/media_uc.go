@@ -2,13 +2,15 @@ package usecases
 
 import (
 	"fmt"
+	"io"
+	"net/http"
+	"path/filepath"
+	"strings"
+
 	rbauth "github.com/RodolfoBonis/rb_auth_client"
 	"github.com/RodolfoBonis/rb-cdn/core/services"
 	"github.com/gin-gonic/gin"
 	"github.com/minio/minio-go"
-	"io"
-	"net/http"
-	"strings"
 )
 
 type MediaHandler struct {
@@ -39,25 +41,14 @@ func NewMediaHandler(minioService services.IMinioService) *MediaHandler {
 // @Failure 500 {object} errors.HttpError
 // @Router /cdn/{bucket}/{objectPath} [get]
 func (uc *MediaHandler) Media(c *gin.Context) {
-	// Get validation from context
+	// Service + service-level permission are guaranteed by the route
+	// middlewares (RequireAuth + RequireService("rb-cdn") +
+	// RequireServicePermission("rb-cdn", "read")). The handler only
+	// needs the per-bucket check below, which depends on a path param
+	// the middlewares don't see.
 	validation := rbauth.GetValidation(c)
 	if validation == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "Authentication required",
-		})
-		return
-	}
-
-	if !validation.Permissions.HasService("rb-cdn") {
-		c.JSON(http.StatusForbidden, gin.H{
-			"error": "No access to service: rb-cdn",
-		})
-		return
-	}
-	if !validation.Permissions.HasServicePermission("rb-cdn", "read") {
-		c.JSON(http.StatusForbidden, gin.H{
-			"error": "No service-level read permission for rb-cdn",
-		})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authentication required"})
 		return
 	}
 
@@ -91,7 +82,10 @@ func (uc *MediaHandler) Media(c *gin.Context) {
 		}
 	}(object)
 
-	extension := strings.Split(objectName, ".")[1]
+	// filepath.Ext is robust against multi-dot filenames and missing
+	// extensions; strings.Split(name, ".")[1] panics on the latter
+	// and returns the wrong segment for files like "video.tar.gz".
+	extension := strings.TrimPrefix(filepath.Ext(objectName), ".")
 
 	videoExtensions := map[string]bool{
 		"mp4": true,

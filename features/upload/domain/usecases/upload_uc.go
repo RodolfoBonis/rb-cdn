@@ -2,15 +2,18 @@ package usecases
 
 import (
 	"fmt"
+	"net/http"
+	"path/filepath"
+	"strings"
+
 	rbauth "github.com/RodolfoBonis/rb_auth_client"
+	"github.com/RodolfoBonis/rb-cdn/core/config"
 	coreEntities "github.com/RodolfoBonis/rb-cdn/core/entities"
 	"github.com/RodolfoBonis/rb-cdn/core/logger"
 	"github.com/RodolfoBonis/rb-cdn/core/services"
 	"github.com/RodolfoBonis/rb-cdn/features/upload/domain/entities"
 	"github.com/gin-gonic/gin"
 	"github.com/minio/minio-go"
-	"net/http"
-	"strings"
 )
 
 type UploadHandler struct {
@@ -39,25 +42,14 @@ func NewUploadHandler(minioService services.IMinioService, log *logger.CustomLog
 // @Failure 500 {object} errors.HttpError
 // @Router /upload [post]
 func (uc *UploadHandler) Upload(c *gin.Context) {
-	// Get validation from context
+	// Service + service-level permission are guaranteed by the route
+	// middlewares (RequireAuth + RequireService("rb-cdn") +
+	// RequireServicePermission("rb-cdn", "write")). The handler only
+	// needs the per-bucket check below, which depends on a form field
+	// the middlewares don't see.
 	validation := rbauth.GetValidation(c)
 	if validation == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "Authentication required",
-		})
-		return
-	}
-
-	if !validation.Permissions.HasService("rb-cdn") {
-		c.JSON(http.StatusForbidden, gin.H{
-			"error": "No access to service: rb-cdn",
-		})
-		return
-	}
-	if !validation.Permissions.HasServicePermission("rb-cdn", "write") {
-		c.JSON(http.StatusForbidden, gin.H{
-			"error": "No service-level write permission for rb-cdn",
-		})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authentication required"})
 		return
 	}
 
@@ -116,7 +108,11 @@ func (uc *UploadHandler) Upload(c *gin.Context) {
 		return
 	}
 
-	extension := strings.Split(objectName, ".")[1]
+	// filepath.Ext returns the last "." segment (".tar.gz" → ".gz")
+	// and "" for extension-less files — both cases strings.Split(name,
+	// ".")[1] gets wrong. The leading dot is trimmed so the lookup
+	// keys below stay simple.
+	extension := strings.TrimPrefix(filepath.Ext(objectName), ".")
 
 	videoExtensions := map[string]bool{
 		"mp4": true,
@@ -128,7 +124,7 @@ func (uc *UploadHandler) Upload(c *gin.Context) {
 	}
 
 	message := fmt.Sprintf("Arquivo '%s' enviado com sucesso!", objectName)
-	rootUri := "https://rb-cdn.rodolfodebonis.com.br/v1"
+	rootUri := config.EnvCDNPublicURL()
 	if videoExtensions[extension] {
 		c.JSON(http.StatusOK, entities.UploadResponseEntity{
 			URL:     fmt.Sprintf("%s/stream/%s", rootUri, objectName),

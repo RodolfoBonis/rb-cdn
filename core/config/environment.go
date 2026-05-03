@@ -111,6 +111,14 @@ func EnvKeycloakRealm() string {
 	return GetEnv("KEYCLOAK_REALM", "master")
 }
 
+// EnvCDNPublicURL returns the operator-facing base URL the upload
+// handler stamps into UploadResponseEntity.URL. Production is
+// fronted by the public hostname; dev/preview overrides via env so
+// the response carries a URL the local browser can actually fetch.
+func EnvCDNPublicURL() string {
+	return GetEnv("CDN_PUBLIC_URL", "https://rb-cdn.rodolfodebonis.com.br/v1")
+}
+
 var osExit = os.Exit
 
 func LoadEnvVars() {
